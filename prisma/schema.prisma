@@ -1,0 +1,189 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum CustomerType {
+  INDIVIDUAL
+  BUSINESS
+}
+
+enum CustomerSource {
+  TIKTOK
+  WHATSAPP
+  GOOGLE
+  FACEBOOK
+  JUMIA
+  JIJI
+  REFERRAL
+  WALK_IN
+  WEBSITE
+  OTHER
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  READY_FOR_DISPATCH
+  CANCELLED
+  COMPLETED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  MPESA
+  CASH_ON_DELIVERY
+  BANK_TRANSFER
+  OTHER
+}
+
+enum DeliveryZone {
+  NAIROBI
+  UPCOUNTRY
+}
+
+enum DeliveryStatus {
+  PENDING
+  ASSIGNED
+  OUT_FOR_DELIVERY
+  DELIVERED
+  FAILED
+}
+
+enum InventoryMovementType {
+  PURCHASE
+  SALE
+  ADJUSTMENT
+  RETURN
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String
+  slug      String    @unique
+  createdAt DateTime  @default(now())
+  products  Product[]
+}
+
+model Product {
+  id               String               @id @default(cuid())
+  name             String
+  slug             String               @unique
+  sku              String?              @unique
+  description      String?
+  unit             String               @default("pack")
+  priceKes         Int
+  stockQuantity    Int                  @default(0)
+  reorderThreshold Int                  @default(5)
+  isActive         Boolean              @default(true)
+  featured         Boolean              @default(false)
+  categoryId       String
+  category         Category             @relation(fields: [categoryId], references: [id])
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  images           ProductImage[]
+  orderItems       OrderItem[]
+  movements        InventoryMovement[]
+}
+
+model ProductImage {
+  id        String  @id @default(cuid())
+  url       String
+  alt       String?
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model InventoryMovement {
+  id        String                 @id @default(cuid())
+  productId String
+  product   Product                @relation(fields: [productId], references: [id])
+  type      InventoryMovementType
+  quantity  Int
+  reference String?
+  createdAt DateTime               @default(now())
+}
+
+model Customer {
+  id        String         @id @default(cuid())
+  name      String
+  phone     String
+  email     String?
+  type      CustomerType   @default(INDIVIDUAL)
+  source    CustomerSource @default(WEBSITE)
+  location  String?
+  notes     String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  orders    Order[]
+
+  @@index([phone])
+}
+
+model Order {
+  id             String         @id @default(cuid())
+  orderNumber    String         @unique
+  customerId     String
+  customer       Customer       @relation(fields: [customerId], references: [id])
+  status         OrderStatus    @default(PENDING)
+  source         CustomerSource @default(WEBSITE)
+  subtotalKes    Int
+  deliveryFeeKes Int            @default(0)
+  totalKes       Int
+  notes          String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  items          OrderItem[]
+  payment        Payment?
+  delivery       Delivery?
+}
+
+model OrderItem {
+  id           String  @id @default(cuid())
+  orderId      String
+  order        Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId    String
+  product      Product @relation(fields: [productId], references: [id])
+  name         String
+  quantity     Int
+  unitPriceKes Int
+  lineTotalKes Int
+}
+
+model Payment {
+  id        String        @id @default(cuid())
+  orderId   String        @unique
+  order     Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  method    PaymentMethod @default(MPESA)
+  status    PaymentStatus @default(UNPAID)
+  amountKes Int
+  mpesaCode String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+model Delivery {
+  id        String          @id @default(cuid())
+  orderId   String          @unique
+  order     Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  zone      DeliveryZone
+  status    DeliveryStatus  @default(PENDING)
+  address   String
+  riderName String?
+  feeKes    Int             @default(0)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+}
