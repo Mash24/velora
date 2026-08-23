@@ -1,6 +1,8 @@
 import { ProductCard } from "@/components/store/ProductCard";
-import { BrandLogo } from "@/components/store/BrandLogo";
 import { CategoryGlyph } from "@/components/store/CategoryGlyph";
+import { CategoryScrollRow } from "@/components/store/CategoryScrollRow";
+import { HomeHero } from "@/components/store/HomeHero";
+import { ProductScrollRow } from "@/components/store/ProductScrollRow";
 import { BUSINESS } from "@/lib/constants";
 import { prisma } from "@/lib/prisma";
 import { CATEGORY_BLURBS } from "@/lib/category-blurbs";
@@ -54,97 +56,58 @@ export default async function HomePage({
     }),
   ]);
 
+  const collageItems = products.flatMap((product) => {
+    const image = product.images[0];
+    if (!image) return [];
+    return [{ url: image.url, alt: image.alt || product.name, slug: product.slug }];
+  });
+
   return (
     <>
-      <section className="border-b border-navy/10 bg-paper">
-        <div className="site-container grid items-center gap-10 py-12 sm:gap-16 lg:grid-cols-2 lg:py-24">
-          <div>
-            {fromTiktok ? (
-              <p className="mb-4 text-sm font-medium text-teal">Welcome from TikTok. You can order on this page.</p>
-            ) : null}
-            <p className="text-sm font-medium tracking-[0.08em] text-teal uppercase">
-              Nairobi shop · Delivery across Kenya
-            </p>
-            <h1 className="page-heading mt-4 max-w-xl">
-              Medical supplies for home, work and healthcare.
-            </h1>
-            <p className="mt-8 max-w-lg text-lg leading-8 text-navy">
-              Browse medical supplies from our Nairobi shop. Choose what you need, submit your order
-              request and we’ll confirm availability and delivery before payment.
-            </p>
-            <div className="mt-8">
-              <Link
-                href="/shop"
-                className="inline-flex h-12 items-center rounded-xl bg-navy px-8 text-sm font-medium text-cream transition hover:bg-teal"
-              >
-                Shop products
-              </Link>
-            </div>
-            <form action="/shop" method="get" className="mt-8">
-              <label className="text-sm font-medium text-navy" htmlFor="home-search">
-                What are you looking for?
-              </label>
-              <div className="mt-2 flex min-w-0 flex-col gap-2 sm:flex-row sm:overflow-hidden sm:rounded-xl sm:border sm:border-navy/10 sm:bg-white">
-                <input
-                  id="home-search"
-                  name="q"
-                  placeholder="Search gloves, masks, stethoscopes..."
-                  className="min-h-11 min-w-0 flex-1 rounded-xl border border-navy/10 bg-white px-4 text-base outline-none sm:border-0 sm:bg-transparent"
-                />
-                <button className="min-h-11 shrink-0 rounded-xl bg-navy px-6 text-sm font-medium text-cream transition hover:bg-teal sm:h-14 sm:px-8">
-                  Search
-                </button>
-              </div>
-            </form>
-          </div>
-
-          <div className="relative hidden min-h-[420px] items-center justify-center lg:flex">
-            <div className="absolute inset-8 rounded-full border border-teal/20" />
-            <div className="absolute inset-16 rounded-full border border-navy/10" />
-            <div className="relative p-8 sm:p-12">
-              <BrandLogo className="h-44 w-auto" priority />
-            </div>
-          </div>
-        </div>
-      </section>
+      <HomeHero fromTiktok={fromTiktok} collageItems={collageItems} />
 
       {categories.length > 0 ? (
-        <section id="categories" className="scroll-mt-24">
-          <div className="site-container py-12 sm:py-16">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-8">
-              <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">Shop by category</h2>
-              <Link href="/shop" className="text-sm font-medium text-teal">
-                View all products
-              </Link>
-            </div>
-            <div className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-              {categories.map((category) => (
-                <Link
-                  key={category.id}
-                  href={`/shop?category=${category.slug}`}
-                  className="group rounded-2xl border border-navy/10 bg-white p-5 shadow-[0_8px_24px_rgba(22,52,76,0.04)] transition hover:-translate-y-1 hover:border-teal/30 hover:shadow-[0_16px_40px_rgba(22,52,76,0.08)] sm:p-8"
-                >
-                  <CategoryGlyph slug={category.slug} />
-                  <span className="mt-8 block text-lg font-semibold tracking-tight">{category.name}</span>
-                  <span className="mt-2 block text-sm leading-6 text-navy">
-                    {CATEGORY_BLURBS[category.slug] ?? "View products in this group."}
-                  </span>
+        <section id="categories" className="scroll-mt-20 md:scroll-mt-24">
+          <CategoryScrollRow categories={categories} />
+          <div className="hidden md:block">
+            <div className="site-container py-12 sm:py-16">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-8">
+                <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">Shop by category</h2>
+                <Link href="/shop" className="text-sm font-medium text-teal">
+                  View all products
                 </Link>
-              ))}
+              </div>
+              <div className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+                {categories.map((category) => (
+                  <Link
+                    key={category.id}
+                    href={`/shop?category=${category.slug}`}
+                    className="group rounded-2xl border border-navy/10 bg-white p-5 shadow-[0_8px_24px_rgba(22,52,76,0.04)] transition hover:-translate-y-1 hover:border-teal/30 hover:shadow-[0_16px_40px_rgba(22,52,76,0.08)] sm:p-8"
+                  >
+                    <CategoryGlyph slug={category.slug} />
+                    <span className="mt-8 block text-lg font-semibold tracking-tight">{category.name}</span>
+                    <span className="mt-2 block text-sm leading-6 text-navy">
+                      {CATEGORY_BLURBS[category.slug] ?? "View products in this group."}
+                    </span>
+                  </Link>
+                ))}
+              </div>
             </div>
           </div>
         </section>
       ) : null}
 
+      <ProductScrollRow products={products} />
+
       <section>
-        <div className="site-container py-12 sm:py-16">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-8">
+        <div className="site-container py-8 sm:py-12 md:py-16">
+          <div className="hidden flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-8 md:flex">
             <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">Products in our shop</h2>
             <Link href="/shop" className="text-sm font-medium text-teal">
               Shop products
             </Link>
           </div>
-          <div className="product-grid mt-8">
+          <div className="product-grid mt-0 hidden md:grid md:mt-8">
             {products.map((product) => (
               <ProductCard key={product.id} {...product} />
             ))}
@@ -178,7 +141,7 @@ export default async function HomePage({
             <div className="mt-8 flex flex-wrap gap-4">
               <a
                 href={mapsUrl}
-                className="inline-flex h-12 items-center rounded-xl bg-navy px-8 text-sm font-medium text-cream"
+                className="inline-flex h-12 items-center rounded-xl bg-teal px-8 text-sm font-medium text-cream transition hover:bg-teal/90"
               >
                 Get directions
               </a>

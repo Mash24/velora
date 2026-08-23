@@ -28,13 +28,13 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-navy/10 bg-paper/95 backdrop-blur supports-[padding:max(0px)]:pt-[env(safe-area-inset-top)]">
-      <div className="site-container flex min-w-0 items-center justify-between gap-3 py-3 sm:gap-4 sm:py-4">
+      <div className="site-container flex min-w-0 items-center justify-between gap-2 py-2 sm:gap-4 sm:py-4">
         <Link
           href="/"
           className="relative z-[45] inline-flex shrink-0 rounded-lg focus-visible:outline-offset-4"
           onClick={() => setOpen(false)}
         >
-          <BrandLogo className="h-10 w-auto sm:h-12 md:h-14" priority />
+          <BrandLogo className="h-9 w-auto sm:h-12 md:h-14" priority />
         </Link>
         <nav className="hidden min-w-0 items-center gap-6 text-[15px] font-medium text-navy lg:flex xl:gap-8">
           {nav.map((item) => (
@@ -47,7 +47,7 @@ export function Header() {
           <OrderLink />
           <button
             type="button"
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-navy/15 bg-white text-sm font-medium text-navy lg:hidden"
+            className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-xl border border-navy/15 bg-white text-xs font-medium text-navy sm:min-h-11 sm:min-w-11 sm:text-sm lg:hidden"
             aria-expanded={open}
             aria-label={open ? "Close menu" : "Open menu"}
             onClick={() => setOpen((value) => !value)}

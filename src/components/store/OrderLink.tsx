@@ -24,7 +24,7 @@ export function OrderLink() {
   return (
     <Link
       href="/your-order"
-      className="inline-flex max-w-[9.5rem] min-h-11 items-center justify-center truncate rounded-xl bg-navy px-3 text-sm font-medium text-cream sm:max-w-none sm:px-5"
+      className="inline-flex max-w-[8.5rem] min-h-10 items-center justify-center truncate rounded-xl bg-navy px-2.5 text-xs font-medium text-cream sm:max-w-none sm:min-h-11 sm:px-5 sm:text-sm"
       title={count ? `Your order (${count} items)` : "Your order"}
     >
       <span className="truncate">{label}</span>

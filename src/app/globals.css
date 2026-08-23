@@ -137,3 +137,29 @@ h3 {
 .sticky-safe-bottom {
   bottom: env(safe-area-inset-bottom, 0px);
 }
+
+/* Horizontal swipe rows — mobile carousels */
+.scroll-row {
+  display: flex;
+  gap: 0.625rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 0.125rem;
+}
+
+.scroll-row::-webkit-scrollbar {
+  display: none;
+}
+
+.scroll-row-item {
+  flex-shrink: 0;
+  scroll-snap-align: start;
+}
+
+.scroll-row-bleed {
+  margin-inline: calc(-1 * max(1rem, env(safe-area-inset-left, 0px)));
+  padding-inline: max(1rem, env(safe-area-inset-left, 0px));
+}

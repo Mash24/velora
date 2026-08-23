@@ -1,11 +1,13 @@
 type CategoryGlyphProps = {
   slug: string;
+  size?: "sm" | "md";
 };
 
-export function CategoryGlyph({ slug }: CategoryGlyphProps) {
+export function CategoryGlyph({ slug, size = "md" }: CategoryGlyphProps) {
   const icon = iconFor(slug);
+  const box = size === "sm" ? "h-10 w-10 rounded-lg [&_svg]:h-5 [&_svg]:w-5" : "h-12 w-12 rounded-xl";
   return (
-    <span className="grid h-12 w-12 place-items-center rounded-xl bg-mist text-teal" aria-hidden>
+    <span className={`grid place-items-center bg-mist text-teal ${box}`} aria-hidden>
       {icon}
     </span>
   );
