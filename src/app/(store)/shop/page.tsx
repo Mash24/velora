@@ -1,54 +1,80 @@
 import { ProductCard } from "@/components/store/ProductCard";
+import { ShopFilters } from "@/components/store/ShopFilters";
 import { prisma } from "@/lib/prisma";
+import {
+  activeCategory,
+  activeSubcategory,
+  priceBandsFrom,
+  publishedProduct,
+  shopOrderBy,
+  shopWhere,
+} from "@/lib/shop-query";
 
-export const metadata = { title: "Shop" };
+export const metadata = {
+  title: "Shop",
+  description:
+    "Browse Velora medical supplies, check prices and submit your order request. We confirm availability before you pay.",
+};
 
 export default async function ShopPage({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string; q?: string }>;
+  searchParams: Promise<{
+    category?: string;
+    subcategory?: string;
+    q?: string;
+    availability?: string;
+    price?: string;
+    sort?: string;
+  }>;
 }) {
-  const { category, q } = await searchParams;
-  const categories = await prisma.category.findMany({ orderBy: { name: "asc" } });
-  const products = await prisma.product.findMany({
-    where: {
-      isActive: true,
-      ...(q ? { name: { contains: q, mode: "insensitive" } } : {}),
-      ...(category ? { category: { slug: category } } : {}),
-    },
-    orderBy: { name: "asc" },
-    include: { category: true },
-  });
+  const query = await searchParams;
+  const { category, subcategory, q, availability, price, sort } = query;
+  const [categories, products, publishedPrices] = await Promise.all([
+    prisma.category.findMany({
+      where: activeCategory,
+      orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+      include: {
+        subcategories: {
+          where: activeSubcategory,
+          orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+        },
+      },
+    }),
+    prisma.product.findMany({
+      where: shopWhere(query),
+      orderBy: shopOrderBy(sort),
+      include: { category: true, subcategory: true, images: true },
+    }),
+    prisma.product.findMany({
+      where: publishedProduct,
+      select: { priceKes: true },
+    }),
+  ]);
+  const selectedParent = categories.find((item) => item.slug === category);
+  const subcategories = selectedParent?.subcategories ?? [];
+  const bands =
+    publishedPrices.length >= 12
+      ? priceBandsFrom(publishedPrices.map((item) => item.priceKes))
+      : [];
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-12">
-      <h1 className="text-3xl font-semibold">Shop medical supplies</h1>
+    <div className="site-container page-py min-w-0">
+      <h1 className="page-heading">Shop medical supplies</h1>
       <p className="mt-2 max-w-2xl text-navy/70">
-        Search the catalogue, check availability, then order on WhatsApp. Prices can be confirmed
-        before payment.
+        Search or filter, then add products to your order. We’ll confirm availability and delivery
+        before you pay.
       </p>
-      <form className="mt-6 flex flex-wrap gap-3">
-        <input
-          name="q"
-          defaultValue={q}
-          placeholder="Search nitrile gloves, masks..."
-          className="min-w-64 flex-1 rounded-full border border-navy/15 bg-white px-4 py-2"
-        />
-        <select
-          name="category"
-          defaultValue={category}
-          className="rounded-full border border-navy/15 bg-white px-4 py-2"
-        >
-          <option value="">All categories</option>
-          {categories.map((item) => (
-            <option key={item.id} value={item.slug}>
-              {item.name}
-            </option>
-          ))}
-        </select>
-        <button className="rounded-full bg-navy px-5 py-2 text-sm text-cream">Search</button>
-      </form>
-      <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+
+      <ShopFilters
+        categories={categories}
+        subcategories={subcategories}
+        bands={bands}
+        query={{ category, subcategory, q, availability, price, sort }}
+        productCount={products.length}
+      />
+
+      <div className="product-grid mt-8">
         {products.map((product) => (
           <ProductCard key={product.id} {...product} />
         ))}

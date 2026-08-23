@@ -1,22 +1,139 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-cream: #f7f4ee;
-  --color-sand: #efe8db;
-  --color-navy: #12324a;
+  --color-cream: #f4f1ea;
+  --color-sand: #ece6d9;
+  --color-paper: #f8f6f1;
+  --color-navy: #16344c;
+  --color-ink: #1a3a52;
   --color-teal: #0e7c7b;
   --color-coral: #c45c26;
   --color-whatsapp: #128c7e;
-  --font-sans: var(--font-geist-sans);
+  --color-mist: #e8eef0;
+  --font-sans: var(--font-jakarta);
+  --breakpoint-xs: 22.5rem;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 html,
 body {
   min-height: 100%;
+  overflow-x: clip;
 }
 
 body {
-  background: var(--color-cream);
+  background: var(--color-paper);
   color: var(--color-navy);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-jakarta), Arial, Helvetica, sans-serif;
+  line-height: 1.6;
+  letter-spacing: 0.01em;
+}
+
+h1,
+h2,
+h3 {
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-teal);
+  outline-offset: 2px;
+}
+
+/* Consistent page containers */
+.site-container {
+  box-sizing: border-box;
+  width: min(100%, 72rem);
+  max-width: 100%;
+  margin-inline: auto;
+  padding-inline: max(1rem, env(safe-area-inset-left, 0px))
+    max(1rem, env(safe-area-inset-right, 0px));
+}
+
+.site-container-narrow {
+  box-sizing: border-box;
+  width: min(100%, 42rem);
+  max-width: 100%;
+  margin-inline: auto;
+  padding-inline: max(1rem, env(safe-area-inset-left, 0px))
+    max(1rem, env(safe-area-inset-right, 0px));
+}
+
+.admin-container {
+  box-sizing: border-box;
+  width: min(100%, 72rem);
+  max-width: 100%;
+  margin-inline: auto;
+  padding-inline: max(1rem, env(safe-area-inset-left, 0px))
+    max(1rem, env(safe-area-inset-right, 0px));
+}
+
+.page-py {
+  padding-block: clamp(1.5rem, 4vw, 3rem);
+}
+
+.page-heading {
+  font-size: clamp(1.625rem, 4vw, 1.875rem);
+  font-weight: 600;
+}
+
+.break-anywhere {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Product grid: 1 col on very small, 2 from 360px+, 3 tablet+, 4 desktop */
+.product-grid {
+  display: grid;
+  gap: clamp(1rem, 3vw, 1.25rem);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 360px) {
+  .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 768px) {
+  .product-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .product-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Admin: table on md+, cards below */
+.admin-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 767px) {
+  .admin-table-desktop {
+    display: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .admin-table-mobile {
+    display: none;
+  }
+}
+
+.safe-bottom {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+}
+
+.sticky-safe-bottom {
+  bottom: env(safe-area-inset-bottom, 0px);
 }

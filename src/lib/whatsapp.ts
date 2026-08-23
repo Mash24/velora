@@ -4,16 +4,29 @@ export function whatsappLink(message: string) {
   return `https://wa.me/${BUSINESS.whatsapp}?text=${encodeURIComponent(message)}`;
 }
 
-export function productEnquiryMessage(name: string, priceKes: number) {
-  return `Hi Velora, I would like to order ${name} (KSh ${priceKes.toLocaleString("en-KE")}).`;
+export function productQuestionMessage(name: string) {
+  return `Hello Velora, I have a question about ${name}.`;
 }
 
-export function orderWhatsappMessage(orderNumber: string, lines: string[], totalKes: number) {
+export function orderWhatsappMessage(
+  lines: string[],
+  location: string,
+  deliveryArea: string,
+  customerName: string,
+  orderNumber?: string,
+) {
   return [
-    `Hi Velora, I would like to place order ${orderNumber}.`,
+    orderNumber
+      ? `Hello Velora, I submitted order request ${orderNumber}.`
+      : "Hello Velora, I submitted an order request on the website.",
     "",
-    ...lines,
+    ...lines.map((line, index) => `${index + 1}. ${line}`),
     "",
-    `Total: KSh ${totalKes.toLocaleString("en-KE")}`,
-  ].join("\n");
+    `Name: ${customerName}`,
+    `Location: ${location}`,
+    `Delivery: ${deliveryArea}`,
+    "Please confirm availability and delivery.",
+  ]
+    .filter(Boolean)
+    .join("\n");
 }

@@ -26,18 +26,21 @@ enum CustomerSource {
   OTHER
 }
 
+enum UserRole {
+  ADMIN
+  STAFF
+}
+
 enum OrderStatus {
-  PENDING
+  ENQUIRY
   CONFIRMED
   PROCESSING
-  READY_FOR_DISPATCH
-  CANCELLED
   COMPLETED
+  CANCELLED
 }
 
 enum PaymentStatus {
   UNPAID
-  PENDING
   PAID
   FAILED
   REFUNDED
@@ -45,8 +48,8 @@ enum PaymentStatus {
 
 enum PaymentMethod {
   MPESA
-  CASH_ON_DELIVERY
-  BANK_TRANSFER
+  CASH
+  PAY_ON_DELIVERY
   OTHER
 }
 
@@ -68,35 +71,74 @@ enum InventoryMovementType {
   SALE
   ADJUSTMENT
   RETURN
+  REVERSAL
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         UserRole @default(ADMIN)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model Category {
-  id        String    @id @default(cuid())
-  name      String
-  slug      String    @unique
-  createdAt DateTime  @default(now())
-  products  Product[]
+  id            String        @id @default(cuid())
+  name          String
+  slug          String        @unique
+  description   String?
+  image         String?
+  isActive      Boolean       @default(true)
+  sortOrder     Int           @default(0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @default(now()) @updatedAt
+  subcategories Subcategory[]
+  products      Product[]
+}
+
+model Subcategory {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String
+  description String?
+  isActive    Boolean   @default(true)
+  sortOrder   Int       @default(0)
+  categoryId  String
+  category    Category  @relation(fields: [categoryId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now()) @updatedAt
+  products    Product[]
+
+  @@unique([categoryId, slug])
+  @@index([categoryId])
 }
 
 model Product {
-  id               String               @id @default(cuid())
-  name             String
-  slug             String               @unique
-  sku              String?              @unique
-  description      String?
-  unit             String               @default("pack")
-  priceKes         Int
-  stockQuantity    Int                  @default(0)
-  reorderThreshold Int                  @default(5)
-  isActive         Boolean              @default(true)
-  featured         Boolean              @default(false)
-  categoryId       String
-  category         Category             @relation(fields: [categoryId], references: [id])
-  createdAt        DateTime             @default(now())
-  updatedAt        DateTime             @updatedAt
-  images           ProductImage[]
-  orderItems       OrderItem[]
-  movements        InventoryMovement[]
+  id                 String               @id @default(cuid())
+  name               String
+  slug               String               @unique
+  sku                String?              @unique
+  shortDescription   String               @default("")
+  description        String?
+  unit               String               @default("pack")
+  stockUnit          String               @default("packs")
+  priceKes           Int
+  stockQuantity      Int                  @default(0)
+  reorderThreshold   Int                  @default(5)
+  askForAvailability Boolean              @default(false)
+  isActive           Boolean              @default(false)
+  featured           Boolean              @default(false)
+  categoryId         String
+  category           Category             @relation(fields: [categoryId], references: [id])
+  subcategoryId      String?
+  subcategory        Subcategory?         @relation(fields: [subcategoryId], references: [id])
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  images             ProductImage[]
+  orderItems         OrderItem[]
+  movements          InventoryMovement[]
 }
 
 model ProductImage {
@@ -114,6 +156,7 @@ model InventoryMovement {
   type      InventoryMovementType
   quantity  Int
   reference String?
+  reason    String?
   createdAt DateTime               @default(now())
 }
 
@@ -134,21 +177,38 @@ model Customer {
 }
 
 model Order {
-  id             String         @id @default(cuid())
-  orderNumber    String         @unique
-  customerId     String
-  customer       Customer       @relation(fields: [customerId], references: [id])
-  status         OrderStatus    @default(PENDING)
-  source         CustomerSource @default(WEBSITE)
-  subtotalKes    Int
-  deliveryFeeKes Int            @default(0)
-  totalKes       Int
-  notes          String?
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  items          OrderItem[]
-  payment        Payment?
-  delivery       Delivery?
+  id                 String         @id @default(cuid())
+  orderNumber        String         @unique
+  customerId         String
+  customer           Customer       @relation(fields: [customerId], references: [id])
+  status             OrderStatus    @default(ENQUIRY)
+  source             CustomerSource @default(WEBSITE)
+  fromWebsiteRequest Boolean        @default(true)
+  subtotalKes        Int
+  deliveryFeeKes     Int            @default(0)
+  totalKes           Int
+  notes              String?
+  refundRequired     Boolean        @default(false)
+  confirmedAt        DateTime?
+  processingAt       DateTime?
+  completedAt        DateTime?
+  cancelledAt        DateTime?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  items              OrderItem[]
+  payment            Payment?
+  delivery           Delivery?
+  events             OrderEvent[]
+}
+
+model OrderEvent {
+  id        String   @id @default(cuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  message   String
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
 }
 
 model OrderItem {
@@ -171,19 +231,24 @@ model Payment {
   status    PaymentStatus @default(UNPAID)
   amountKes Int
   mpesaCode String?
+  paidAt    DateTime?
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
 }
 
 model Delivery {
-  id        String          @id @default(cuid())
-  orderId   String          @unique
-  order     Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  zone      DeliveryZone
-  status    DeliveryStatus  @default(PENDING)
-  address   String
-  riderName String?
-  feeKes    Int             @default(0)
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
+  id               String          @id @default(cuid())
+  orderId          String          @unique
+  order            Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  zone             DeliveryZone
+  status           DeliveryStatus  @default(PENDING)
+  address          String
+  riderName        String?
+  feeKes           Int             @default(0)
+  outForDeliveryAt DateTime?
+  deliveredAt      DateTime?
+  failedAt         DateTime?
+  failureReason    String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
 }

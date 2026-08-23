@@ -1,5 +1,7 @@
 "use client";
 
+import { BrandLogo } from "@/components/store/BrandLogo";
+import { adminButtonClass, adminInputClass, adminLabelClass } from "@/components/admin/ui";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -19,7 +21,7 @@ export default function AdminLoginPage() {
       }),
     });
     if (!response.ok) {
-      setError("Invalid login.");
+      setError("Email or password is not correct.");
       return;
     }
     router.push("/admin");
@@ -27,20 +29,52 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="grid min-h-screen place-items-center bg-navy px-4">
-      <form onSubmit={onSubmit} className="w-full max-w-sm rounded-2xl bg-cream p-6">
-        <h1 className="text-xl font-semibold text-navy">Velora admin</h1>
-        <label className="mt-4 block text-sm text-navy">
-          Email
-          <input name="email" type="email" required className="mt-1 w-full rounded-xl border border-navy/15 px-3 py-2" />
-        </label>
-        <label className="mt-3 block text-sm text-navy">
-          Password
-          <input name="password" type="password" required className="mt-1 w-full rounded-xl border border-navy/15 px-3 py-2" />
-        </label>
-        {error ? <p className="mt-3 text-sm text-coral">{error}</p> : null}
-        <button className="mt-5 w-full rounded-full bg-navy py-2 text-sm text-cream">Sign in</button>
-      </form>
+    <div className="relative min-h-screen bg-navy">
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-[linear-gradient(160deg,#1a3a52_0%,#16344c_55%,#122a3d_100%)]"
+      />
+
+      <div className="relative flex min-h-screen items-center justify-center px-4 py-12 supports-[padding:max(0px)]:pb-[max(3rem,env(safe-area-inset-bottom))]">
+        <form
+          onSubmit={onSubmit}
+          className="w-full max-w-sm min-w-0 rounded-2xl border border-white/10 bg-cream p-6 shadow-[0_24px_64px_rgba(0,0,0,0.25)] sm:p-8"
+        >
+          <BrandLogo className="mx-auto h-20 w-auto" />
+          <h1 className="mt-5 text-center text-xl font-semibold tracking-tight text-navy">Sign in</h1>
+          <p className="mt-1 text-center text-sm text-navy/55">Velora back office</p>
+
+          <label className={`${adminLabelClass} mt-6`}>
+            Email
+            <input
+              name="email"
+              type="email"
+              required
+              autoComplete="username"
+              className={`${adminInputClass} mt-1.5 bg-paper`}
+            />
+          </label>
+          <label className={`${adminLabelClass} mt-4`}>
+            Password
+            <input
+              name="password"
+              type="password"
+              required
+              autoComplete="current-password"
+              className={`${adminInputClass} mt-1.5 bg-paper`}
+            />
+          </label>
+
+          {error ? <p className="mt-4 text-sm text-coral">{error}</p> : null}
+
+          <button
+            type="submit"
+            className={`${adminButtonClass("primary")} mt-6 min-h-11 w-full rounded-xl`}
+          >
+            Sign in
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

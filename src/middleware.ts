@@ -1,9 +1,11 @@
-import { isValidAdminToken } from "@/lib/admin-auth";
+import { isValidAdminToken } from "@/lib/admin-session";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  if (!pathname.startsWith("/admin") || pathname === "/admin/login") {
+  const isLogin = pathname === "/admin/login" || pathname === "/api/admin/login";
+  const isAdminSurface = pathname.startsWith("/admin") || pathname.startsWith("/api/admin");
+  if (!isAdminSurface || isLogin) {
     return NextResponse.next();
   }
 
@@ -12,9 +14,13 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  if (pathname.startsWith("/api/admin")) {
+    return NextResponse.json({ error: "Please sign in." }, { status: 401 });
+  }
+
   return NextResponse.redirect(new URL("/admin/login", request.url));
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/api/admin/:path*"],
 };

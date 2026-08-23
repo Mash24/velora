@@ -12,3 +12,11 @@ export function slugify(value: string) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
 }
+
+export function priceWithUnit(priceKes: number, unit: string) {
+  return `${formatKes(priceKes)} / ${unit}`;
+}
+
+export function nextSku(count: number) {
+  return `VMS-${String(count + 1).padStart(3, "0")}`;
+}

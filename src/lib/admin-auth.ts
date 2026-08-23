@@ -1,63 +1,35 @@
+import { UserRole } from "@prisma/client";
 import { cookies } from "next/headers";
+import {
+  ADMIN_COOKIE,
+  createAdminToken,
+  isValidAdminToken,
+  parseAdminToken,
+} from "./admin-session";
+import { hashPassword, verifyPassword } from "./password";
+import { prisma } from "./prisma";
 
-const COOKIE = "velora_admin";
-
-function secret() {
-  const value = process.env.ADMIN_SESSION_SECRET;
-  if (!value) throw new Error("ADMIN_SESSION_SECRET is not set");
-  return value;
-}
-
-function toHex(buffer: ArrayBuffer) {
-  return Array.from(new Uint8Array(buffer))
-    .map((byte) => byte.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-async function hmacHex(payload: string) {
-  const key = await crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(secret()),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"],
-  );
-  const signature = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payload));
-  return toHex(signature);
-}
-
-export async function createAdminToken() {
-  const exp = Date.now() + 7 * 24 * 60 * 60 * 1000;
-  const payload = `admin.${exp}`;
-  const sig = await hmacHex(payload);
-  return `${payload}.${sig}`;
-}
-
-export async function isValidAdminToken(token?: string | null) {
-  if (!token) return false;
-  const lastDot = token.lastIndexOf(".");
-  if (lastDot === -1) return false;
-  const payload = token.slice(0, lastDot);
-  const sig = token.slice(lastDot + 1);
-  const expected = await hmacHex(payload);
-  if (sig.length !== expected.length) return false;
-  let diff = 0;
-  for (let i = 0; i < sig.length; i += 1) {
-    diff |= sig.charCodeAt(i) ^ expected.charCodeAt(i);
-  }
-  if (diff !== 0) return false;
-  const exp = Number(payload.split(".")[1]);
-  return Number.isFinite(exp) && exp > Date.now();
-}
+export { createAdminToken, isValidAdminToken } from "./admin-session";
 
 export async function isAdminAuthenticated() {
   const jar = await cookies();
-  return isValidAdminToken(jar.get(COOKIE)?.value);
+  return isValidAdminToken(jar.get(ADMIN_COOKIE)?.value);
 }
 
-export async function setAdminCookie() {
+export async function getCurrentAdmin() {
   const jar = await cookies();
-  jar.set(COOKIE, await createAdminToken(), {
+  const token = jar.get(ADMIN_COOKIE)?.value;
+  const parsed = token ? parseAdminToken(token) : null;
+  if (!parsed || !(await isValidAdminToken(token))) return null;
+  return prisma.user.findUnique({
+    where: { id: parsed.userId },
+    select: { id: true, name: true, email: true, role: true },
+  });
+}
+
+export async function setAdminCookie(userId: string) {
+  const jar = await cookies();
+  jar.set(ADMIN_COOKIE, await createAdminToken(userId), {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
@@ -68,12 +40,61 @@ export async function setAdminCookie() {
 
 export async function clearAdminCookie() {
   const jar = await cookies();
-  jar.delete(COOKIE);
+  jar.delete(ADMIN_COOKIE);
 }
 
-export function verifyAdminCredentials(email: string, password: string) {
-  return (
-    email.trim().toLowerCase() === (process.env.ADMIN_EMAIL ?? "").toLowerCase() &&
-    password === (process.env.ADMIN_PASSWORD ?? "")
-  );
+function envAdmin() {
+  const email = (process.env.ADMIN_EMAIL ?? "").trim().toLowerCase();
+  const password = process.env.ADMIN_PASSWORD ?? "";
+  const name = (process.env.ADMIN_NAME ?? "Admin").trim() || "Admin";
+  if (!email || !password) return null;
+  return { email, password, name, role: UserRole.ADMIN };
+}
+
+export async function verifyAdminCredentials(email: string, password: string) {
+  const normalized = email.trim().toLowerCase();
+  const user = await prisma.user.findUnique({ where: { email: normalized } });
+  if (user && (await verifyPassword(password, user.passwordHash))) {
+    return user;
+  }
+
+  const legacy = envAdmin();
+  if (legacy && normalized === legacy.email && password === legacy.password) {
+    return prisma.user.upsert({
+      where: { email: legacy.email },
+      update: { name: legacy.name, passwordHash: await hashPassword(password) },
+      create: {
+        email: legacy.email,
+        name: legacy.name,
+        passwordHash: await hashPassword(password),
+        role: legacy.role,
+      },
+    });
+  }
+
+  return null;
+}
+
+export async function createAdminUser(input: {
+  name: string;
+  email: string;
+  password: string;
+  role?: UserRole;
+}) {
+  const email = input.email.trim().toLowerCase();
+  const name = input.name.trim();
+  if (!email || !name || !input.password) {
+    throw new Error("Please enter a name, email and password.");
+  }
+  const existing = await prisma.user.findUnique({ where: { email } });
+  if (existing) throw new Error("An account with that email already exists.");
+  return prisma.user.create({
+    data: {
+      email,
+      name,
+      passwordHash: await hashPassword(input.password),
+      role: input.role ?? UserRole.STAFF,
+    },
+    select: { id: true, name: true, email: true, role: true },
+  });
 }

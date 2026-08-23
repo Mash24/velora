@@ -1,0 +1,94 @@
+"use client";
+
+import { MAX_ORDER_LINE_QTY } from "@/lib/constants";
+import { addToOrder } from "@/lib/order-storage";
+import Link from "next/link";
+import { useState } from "react";
+
+type Props = {
+  productId: string;
+  name: string;
+  unit: string;
+  priceKes: number;
+  inStock: boolean;
+  askUs: boolean;
+  imageUrl?: string;
+  compact?: boolean;
+};
+
+export function AddToOrderButton({
+  productId,
+  name,
+  unit,
+  priceKes,
+  inStock,
+  askUs,
+  imageUrl,
+  compact = false,
+}: Props) {
+  const [added, setAdded] = useState(false);
+  const [quantity, setQuantity] = useState(1);
+
+  function add(qty = quantity) {
+    addToOrder({ productId, name, unit, priceKes, imageUrl }, qty);
+    setAdded(true);
+  }
+
+  if (compact) {
+    return (
+      <button
+        type="button"
+        onClick={() => add(1)}
+        className="min-h-11 w-full rounded-xl bg-navy px-4 text-sm font-medium text-cream"
+      >
+        {added ? "Added to your order" : "Add to your order"}
+      </button>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {!inStock && !askUs ? (
+        <p className="text-sm text-navy/70">
+          This is showing as out of stock. You can still add it to your order. We’ll confirm if we
+          have it.
+        </p>
+      ) : null}
+      {askUs ? (
+        <p className="text-sm text-navy/70">We’ll confirm whether this is available after you submit your order request.</p>
+      ) : null}
+      <div className="flex items-center gap-3">
+        <span className="text-sm">Quantity</span>
+        <button
+          type="button"
+          aria-label="Reduce quantity"
+          className="min-h-11 min-w-11 rounded-full border border-navy/15"
+          onClick={() => setQuantity((value) => Math.max(1, value - 1))}
+        >
+          −
+        </button>
+        <span className="min-w-6 text-center">{quantity}</span>
+        <button
+          type="button"
+          aria-label="Increase quantity"
+          className="min-h-11 min-w-11 rounded-full border border-navy/15"
+          onClick={() => setQuantity((value) => Math.min(MAX_ORDER_LINE_QTY, value + 1))}
+        >
+          +
+        </button>
+      </div>
+      <button
+        type="button"
+        onClick={() => add()}
+        className="min-h-11 rounded-full bg-navy px-5 py-3 text-sm font-medium text-cream"
+      >
+        {added ? "Added to your order" : "Add to your order"}
+      </button>
+      {added ? (
+        <Link href="/your-order" className="block text-sm text-teal">
+          View your order
+        </Link>
+      ) : null}
+    </div>
+  );
+}
