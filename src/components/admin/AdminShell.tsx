@@ -19,7 +19,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen min-w-0 bg-[linear-gradient(165deg,#faf8f4_0%,#f0ebe3_48%,#ebe4d8_100%)]">
       <header className="sticky top-0 z-30 flex items-center justify-between border-b border-navy/8 bg-paper/95 px-4 py-3 backdrop-blur-md supports-[padding:max(0px)]:pt-[env(safe-area-inset-top)] lg:hidden">
-        <Link href="/admin" className="min-w-0 shrink" onClick={() => setMobileOpen(false)}>
+        <Link href="/admin" className="relative z-[45] inline-flex shrink-0" onClick={() => setMobileOpen(false)}>
           <BrandLogo className="h-10 w-auto" />
         </Link>
         <button
@@ -63,7 +63,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
           <div className="hidden border-b border-white/8 px-5 py-6 lg:block">
             <Link href="/admin" onClick={() => setMobileOpen(false)}>
-              <BrandLogo className="h-11 w-auto" />
+              <BrandLogo onDark className="h-11 w-auto" />
             </Link>
             <p className="mt-3 text-[11px] font-medium uppercase tracking-[0.18em] text-cream/70">
               Velora admin
