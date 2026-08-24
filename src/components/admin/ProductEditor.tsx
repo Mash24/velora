@@ -129,7 +129,8 @@ export function ProductEditor({
       return;
     }
     form.reset();
-    setMessage("Photo added.");
+    const count = typeof data.count === "number" ? data.count : 1;
+    setMessage(count > 1 ? `${count} photos added.` : "Photo added.");
     router.refresh();
   }
 
@@ -157,20 +158,30 @@ export function ProductEditor({
               onSubcategoryChange={setSubcategoryId}
             />
             <label className={adminLabelClass}>
-              One-sentence description
+              Short summary
+              <span className="mt-0.5 block text-xs font-normal text-navy/55">
+                One line under the product name. Example: Powder-free examination gloves for clinic
+                and home care.
+              </span>
               <input
                 name="shortDescription"
                 defaultValue={product.shortDescription}
-                maxLength={140}
+                maxLength={160}
                 className={`${adminInputClass} mt-1.5`}
               />
             </label>
             <label className={adminLabelClass}>
-              Longer description (optional)
+              About this product
+              <span className="mt-0.5 block text-xs font-normal text-navy/55">
+                This is what customers read on the product page. Include what it is, pack size, who
+                it is for, and how it is used. Use Velora’s own wording only.
+              </span>
               <textarea
                 name="description"
                 defaultValue={product.description ?? ""}
-                className={`${adminTextareaClass} mt-1.5`}
+                rows={12}
+                placeholder={"What it is\nPack size\nWho it is for\nHow to use it"}
+                className={`${adminTextareaClass} mt-1.5 min-h-48`}
               />
             </label>
             <label className={adminLabelClass}>
@@ -250,7 +261,7 @@ export function ProductEditor({
 
       <AdminCard
         title="Photos"
-        description="A photo is required before the product appears in the shop."
+        description="Customers swipe through these on the product page. Add several angles if you have them."
       >
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {product.images.map((image) => (
@@ -273,17 +284,18 @@ export function ProductEditor({
         </div>
         <form onSubmit={upload} className="mt-4 space-y-3 border-t border-navy/6 pt-4">
           <label className={adminLabelClass}>
-            Add photo
+            Add photos
             <input
               name="file"
               type="file"
               accept="image/jpeg,image/png,image/webp"
+              multiple
               required
               className="mt-1.5 block w-full text-sm text-navy/70 file:mr-3 file:rounded-lg file:border-0 file:bg-navy/8 file:px-3 file:py-2 file:text-sm file:font-medium file:text-navy"
             />
           </label>
           <button type="submit" className={adminButtonClass("secondary")}>
-            Upload photo
+            Upload photos
           </button>
         </form>
       </AdminCard>

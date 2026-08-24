@@ -118,7 +118,7 @@ export default async function HomePage({
             <div className="flex items-end justify-between gap-4">
               <div>
                 <h2 className="section-heading">Best sellers</h2>
-                <p className="mt-1 text-sm text-navy/70">Prices in KES. Stock shown from the Nairobi shop.</p>
+                <p className="mt-1 hidden text-sm text-navy/70 sm:block">Prices in KES from the Nairobi shop.</p>
               </div>
               <Link href="/shop" className="shrink-0 text-sm font-semibold text-teal">
                 Shop all

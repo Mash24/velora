@@ -1,5 +1,5 @@
 import { AddToOrderButton } from "@/components/store/AddToOrderButton";
-import { priceWithUnit } from "@/lib/format";
+import { formatKes } from "@/lib/format";
 import { availabilityTone, publicAvailability } from "@/lib/labels";
 import Link from "next/link";
 
@@ -21,7 +21,6 @@ export function ProductCard({
   slug,
   priceKes,
   unit,
-  shortDescription,
   stockQuantity,
   askForAvailability = false,
   images = [],
@@ -30,35 +29,37 @@ export function ProductCard({
   const image = images[0];
 
   return (
-    <article className="flex min-w-0 flex-col rounded-2xl border border-navy/10 bg-white p-3 shadow-[0_8px_24px_rgba(22,52,76,0.04)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_40px_rgba(22,52,76,0.08)] sm:p-4">
-      <div className="mb-4 aspect-[4/3] overflow-hidden rounded-xl bg-white ring-1 ring-navy/5 sm:mb-5">
-        {image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={image.url}
-            alt={image.alt || name}
-            className="h-full w-full object-cover"
-            loading="lazy"
-          />
-        ) : (
-          <div className="grid h-full place-items-center bg-mist text-teal">
-            <span className="text-xs uppercase tracking-[0.2em]">Velora</span>
-          </div>
-        )}
-      </div>
-      <h3 className="line-clamp-2 text-base font-semibold tracking-tight text-navy sm:text-lg">
-        <Link href={`/product/${slug}`} className="break-anywhere">
-          {name}
-        </Link>
-      </h3>
-      <p className="mt-2 text-base font-semibold tabular-nums text-navy sm:text-lg">
-        {priceWithUnit(priceKes, unit)}
-      </p>
-      <p className={`mt-1 text-sm ${availabilityTone(availability)}`}>{availability}</p>
-      {shortDescription ? (
-        <p className="mt-2 line-clamp-2 text-sm text-navy/85">{shortDescription}</p>
-      ) : null}
-      <div className="mt-auto flex flex-col gap-2.5 pt-4">
+    <article className="flex min-w-0 flex-col overflow-hidden rounded-xl border border-navy/10 bg-white shadow-[0_8px_24px_rgba(22,52,76,0.04)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_40px_rgba(22,52,76,0.08)] sm:rounded-2xl">
+      <Link href={`/product/${slug}`} className="min-w-0">
+        <div className="aspect-square overflow-hidden bg-mist/60 p-2 sm:p-3">
+          {image ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={image.url}
+              alt={image.alt || name}
+              className="h-full w-full object-contain"
+              loading="lazy"
+            />
+          ) : (
+            <div className="grid h-full place-items-center text-[10px] uppercase tracking-[0.18em] text-teal sm:text-xs">
+              Velora
+            </div>
+          )}
+        </div>
+        <div className="px-2.5 pt-2.5 sm:px-3.5 sm:pt-3">
+          <h3 className="line-clamp-2 min-h-[2.4em] text-[13px] leading-snug font-semibold tracking-tight text-navy sm:min-h-0 sm:text-sm md:text-base">
+            {name}
+          </h3>
+          <p className="mt-1.5 text-sm font-bold tabular-nums text-navy sm:text-base">
+            {formatKes(priceKes)}
+          </p>
+          <p className="truncate text-[11px] text-navy/55 sm:text-xs">{unit}</p>
+          <p className={`mt-1 text-[11px] font-medium sm:text-xs ${availabilityTone(availability)}`}>
+            {availability}
+          </p>
+        </div>
+      </Link>
+      <div className="mt-auto px-2.5 pt-2 pb-2.5 sm:px-3.5 sm:pt-3 sm:pb-3.5">
         <AddToOrderButton
           productId={id}
           name={name}
@@ -69,9 +70,6 @@ export function ProductCard({
           imageUrl={image?.url}
           compact
         />
-        <Link href={`/product/${slug}`} className="text-center text-sm font-medium text-teal">
-          View product
-        </Link>
       </div>
     </article>
   );

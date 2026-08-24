@@ -100,26 +100,20 @@ h3 {
   word-break: break-word;
 }
 
-/* Product grid: 1 col on very small, 2 from 360px+, 3 tablet+, 4 desktop */
+/* Product grid: 2 col phones, 3 tablets, 4 desktops */
 .product-grid {
   display: grid;
-  gap: clamp(1rem, 3vw, 1.25rem);
-  grid-template-columns: 1fr;
+  gap: clamp(0.5rem, 2vw, 1.25rem);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-@media (min-width: 360px) {
-  .product-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 768px) {
+@media (min-width: 640px) {
   .product-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
-@media (min-width: 1280px) {
+@media (min-width: 1024px) {
   .product-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }

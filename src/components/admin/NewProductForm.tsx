@@ -75,18 +75,30 @@ export function NewProductForm({ categories }: { categories: Category[] }) {
             onSubcategoryChange={setSubcategoryId}
           />
           <label className={adminLabelClass}>
-            One-sentence description
+            Short summary
+            <span className="mt-0.5 block text-xs font-normal text-navy/55">
+              One line under the product name.
+            </span>
             <input
               name="shortDescription"
               required
-              maxLength={140}
+              maxLength={160}
               placeholder="Powder-free examination gloves"
               className={`${adminInputClass} mt-1.5`}
             />
           </label>
           <label className={adminLabelClass}>
-            Longer description (optional — Velora’s own wording only)
-            <textarea name="description" className={`${adminTextareaClass} mt-1.5`} />
+            About this product
+            <span className="mt-0.5 block text-xs font-normal text-navy/55">
+              Shown on the product page. Include what it is, pack size, who it is for, and how it is
+              used. Velora’s own wording only.
+            </span>
+            <textarea
+              name="description"
+              rows={10}
+              placeholder={"What it is\nPack size\nWho it is for\nHow to use it"}
+              className={`${adminTextareaClass} mt-1.5 min-h-40`}
+            />
           </label>
         </div>
       </AdminCard>

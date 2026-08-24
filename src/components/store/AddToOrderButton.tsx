@@ -39,13 +39,18 @@ export function AddToOrderButton({
       <button
         type="button"
         onClick={() => add(1)}
-        className={`min-h-11 w-full rounded-xl px-4 text-sm font-semibold transition active:scale-[0.98] ${
+        className={`min-h-9 w-full rounded-lg px-2 text-xs font-semibold transition active:scale-[0.98] sm:min-h-11 sm:rounded-xl sm:px-4 sm:text-sm ${
           added
             ? "bg-teal/10 text-teal ring-1 ring-teal/30"
             : "bg-coral text-white shadow-[0_3px_10px_rgba(196,92,38,0.3)] hover:bg-coral/90"
         }`}
       >
-        {added ? "✓ Added to order" : "Add to your order"}
+        {added ? "Added" : (
+          <>
+            <span className="sm:hidden">Add</span>
+            <span className="hidden sm:inline">Add to order</span>
+          </>
+        )}
       </button>
     );
   }
