@@ -167,7 +167,7 @@ export default async function AdminOrdersPage({
         <div className="mt-5 space-y-3">
           <div>
             <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-navy/45">Status</p>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:flex-wrap [&::-webkit-scrollbar]:hidden">
               {statuses.map((item) => (
                 <AdminFilterPill
                   key={item.label}
@@ -189,7 +189,7 @@ export default async function AdminOrdersPage({
             <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-navy/45">
               Payment & delivery
             </p>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:flex-wrap [&::-webkit-scrollbar]:hidden">
               <AdminFilterPill
                 href={href({ status: query.status, q: query.q, when: query.when, delivery: query.delivery })}
                 active={!query.payment && query.needs !== "payment"}

@@ -82,7 +82,7 @@ export default async function AdminDashboardPage({
         <AdminSectionTitle description="Jump straight to what needs action today.">
           What needs your attention
         </AdminSectionTitle>
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <AdminStatCard
             label="New orders"
             value={data.attention.newOrders}

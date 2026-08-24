@@ -6,7 +6,7 @@ import {
   Package,
   PlusCircle,
   ShoppingBag,
-  Tags,
+  UserCog,
   Users,
   Warehouse,
 } from "lucide-react";
@@ -38,7 +38,7 @@ const groups: {
     title: "People",
     links: [
       { href: "/admin/customers", label: "Customers", icon: Users },
-      { href: "/admin/team", label: "Team", icon: Tags },
+      { href: "/admin/team", label: "Team", icon: UserCog },
     ],
   },
 ];
@@ -55,7 +55,7 @@ export function AdminNav({ onNavigate }: { onNavigate?: () => void }) {
     <nav className="space-y-6">
       {groups.map((group) => (
         <div key={group.title}>
-          <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-cream/70">
+          <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-teal/80">
             {group.title}
           </p>
           <ul className="space-y-0.5">
@@ -69,11 +69,11 @@ export function AdminNav({ onNavigate }: { onNavigate?: () => void }) {
                     onClick={onNavigate}
                     className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
                       isActive
-                        ? "bg-white/14 text-cream"
-                        : "text-cream/85 hover:bg-white/8 hover:text-cream"
+                        ? "bg-teal text-white shadow-[0_6px_16px_rgba(14,124,123,0.35)]"
+                        : "text-cream/85 hover:bg-white/10 hover:text-cream"
                     }`}
                   >
-                    <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-cream" : "text-cream/70"}`} />
+                    <Icon className="h-4 w-4 shrink-0" />
                     {link.label}
                   </Link>
                 </li>

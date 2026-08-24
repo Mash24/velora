@@ -66,7 +66,7 @@ h3 {
 
 .admin-container {
   box-sizing: border-box;
-  width: min(100%, 72rem);
+  width: min(100%, 80rem);
   max-width: 100%;
   margin-inline: auto;
   padding-inline: max(1rem, env(safe-area-inset-left, 0px))

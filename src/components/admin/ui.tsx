@@ -44,19 +44,23 @@ export function AdminPageHeader({
   meta?: ReactNode;
 }) {
   return (
-    <div className="mb-8">
+    <div className="mb-6 sm:mb-8">
       {backHref ? (
         <Link href={backHref} className="mb-3 inline-flex items-center gap-1 text-sm font-medium text-teal">
           ← {backLabel}
         </Link>
       ) : null}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight text-navy sm:text-2xl md:text-3xl">{title}</h1>
-          {description ? <p className="mt-1.5 max-w-2xl text-sm text-navy/70">{description}</p> : null}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+        <div className="min-w-0">
+          <h1 className="text-[1.35rem] font-semibold tracking-tight text-navy sm:text-2xl md:text-3xl">
+            {title}
+          </h1>
+          {description ? <p className="mt-1.5 max-w-2xl text-sm leading-6 text-navy/70">{description}</p> : null}
           {meta ? <div className="mt-2 text-sm text-navy/65">{meta}</div> : null}
         </div>
-        {actions ? <div className="flex shrink-0 flex-wrap gap-2">{actions}</div> : null}
+        {actions ? (
+          <div className="flex w-full shrink-0 flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap">{actions}</div>
+        ) : null}
       </div>
     </div>
   );
@@ -83,7 +87,7 @@ export function AdminCard({
   action,
   children,
   className = "",
-  padding = "p-5",
+  padding = "p-4 sm:p-5",
 }: {
   title?: string;
   description?: string;
@@ -94,7 +98,7 @@ export function AdminCard({
 }) {
   return (
     <section
-      className={`rounded-2xl border border-navy/8 bg-white shadow-[0_1px_2px_rgba(22,52,76,0.04),0_8px_24px_rgba(22,52,76,0.04)] ${padding} ${className}`}
+      className={`rounded-2xl border border-navy/8 bg-white shadow-[0_1px_2px_rgba(22,52,76,0.04),0_10px_28px_rgba(22,52,76,0.05)] ${padding} ${className}`}
     >
       {title ? (
         <div className="mb-4 flex items-start justify-between gap-3">
@@ -147,14 +151,24 @@ export function AdminStatCard({
   return (
     <Link
       href={href}
-      className="group rounded-2xl border border-navy/8 bg-white p-5 shadow-[0_1px_2px_rgba(22,52,76,0.04),0_8px_24px_rgba(22,52,76,0.04)] transition hover:-translate-y-0.5 hover:border-teal/20 hover:shadow-[0_12px_32px_rgba(22,52,76,0.08)]"
+      className={`group rounded-2xl border bg-white p-4 shadow-[0_1px_2px_rgba(22,52,76,0.04),0_10px_28px_rgba(22,52,76,0.05)] transition hover:-translate-y-0.5 hover:shadow-[0_12px_32px_rgba(22,52,76,0.08)] sm:p-5 ${
+        warn ? "border-coral/35" : "border-navy/8 hover:border-teal/25"
+      }`}
     >
-      <p className="text-sm font-medium text-navy/70">{label}</p>
-      <p className="mt-2 text-3xl font-semibold tabular-nums tracking-tight text-navy">{value}</p>
-      <p className={`mt-2 text-sm ${warn ? "font-medium text-coral" : "text-navy/70"}`}>{hint}</p>
-      <p className="mt-4 text-sm font-medium text-navy/80 transition group-hover:text-teal">
-        Open →
+      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-navy/50 sm:text-sm sm:font-medium sm:normal-case sm:tracking-normal sm:text-navy/70">
+        {label}
       </p>
+      <p
+        className={`mt-2 text-2xl font-semibold tabular-nums tracking-tight sm:text-3xl ${
+          warn ? "text-coral" : "text-navy"
+        }`}
+      >
+        {value}
+      </p>
+      <p className={`mt-2 text-xs leading-5 sm:text-sm ${warn ? "font-medium text-coral" : "text-navy/70"}`}>
+        {hint}
+      </p>
+      <p className="mt-4 text-sm font-medium text-navy/80 transition group-hover:text-teal">Open →</p>
     </Link>
   );
 }
@@ -167,10 +181,10 @@ export function AdminBadge({
   tone?: "neutral" | "teal" | "navy" | "coral" | "sand";
 }) {
   const tones = {
-    neutral: "border border-navy/10 bg-mist text-navy",
-    teal: "border border-teal/25 bg-white text-navy",
-    navy: "border border-navy/15 bg-navy/5 text-navy",
-    coral: "border border-coral/30 bg-white text-navy",
+    neutral: "border border-navy/10 bg-mist text-navy/80",
+    teal: "border border-teal/20 bg-teal/10 text-teal",
+    navy: "border border-navy/15 bg-navy text-cream",
+    coral: "border border-coral/25 bg-coral/10 text-coral",
     sand: "border border-navy/10 bg-sand text-navy",
   };
   return (
@@ -192,7 +206,7 @@ export function AdminFilterPill({
   return (
     <Link
       href={href}
-      className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition ${
+      className={`inline-flex shrink-0 rounded-full px-3.5 py-1.5 text-sm font-medium whitespace-nowrap transition ${
         active
           ? "bg-navy text-cream shadow-sm"
           : "border border-navy/12 bg-white text-navy hover:border-navy/20"
@@ -242,7 +256,7 @@ export function AdminButtonLink({
   className?: string;
 }) {
   return (
-    <Link href={href} className={`${adminButtonClass(variant)} ${className}`}>
+    <Link href={href} className={`${adminButtonClass(variant)} w-full sm:w-auto ${className}`}>
       {children}
     </Link>
   );

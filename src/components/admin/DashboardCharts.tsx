@@ -94,9 +94,9 @@ export function RequestChart({ buckets }: { buckets: { label: string; value: num
         ))}
       </div>
 
-      <div className="relative flex h-32 items-end gap-0.5 sm:h-44 sm:gap-1.5">
+      <div className="relative flex h-28 items-end gap-0.5 sm:h-44 sm:gap-1.5">
         {buckets.map((bucket) => {
-          const height = max ? Math.max(6, (bucket.value / max) * 128) : 6;
+          const height = max ? Math.max(6, (bucket.value / max) * (dense ? 88 : 128)) : 6;
           const hasValue = bucket.value > 0;
           return (
             <div
@@ -147,10 +147,10 @@ export function DashboardMiniStat({
   return (
     <Link
       href={href}
-      className={`block rounded-xl border bg-white px-3 py-4 text-center transition hover:bg-sand/30 ${accents[tone]}`}
+      className={`block rounded-xl border bg-white px-2 py-3 text-center transition hover:bg-sand/30 sm:px-3 sm:py-4 ${accents[tone]}`}
     >
-      <p className="text-2xl font-semibold tabular-nums tracking-tight text-navy">{value}</p>
-      <p className="mt-1 text-xs font-medium text-navy/70">{label}</p>
+      <p className="text-xl font-semibold tabular-nums tracking-tight text-navy sm:text-2xl">{value}</p>
+      <p className="mt-1 text-[10px] leading-snug font-medium text-navy/65 sm:text-xs">{label}</p>
     </Link>
   );
 }
