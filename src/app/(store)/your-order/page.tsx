@@ -8,7 +8,7 @@ import { clearOrder, readOrder, SOURCE_STORAGE_KEY, type OrderLine } from "@/lib
 import { isUsablePhone } from "@/lib/phone";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useEffect, useState, type ReactNode } from "react";
+import { FormEvent, useState, type ReactNode } from "react";
 
 type FulfillmentType = "PICKUP" | "DELIVERY";
 
@@ -25,14 +25,10 @@ function SectionHeading({ children }: { children: ReactNode }) {
 
 export default function YourOrderPage() {
   const router = useRouter();
-  const [items, setItems] = useState<OrderLine[]>([]);
+  const [items, setItems] = useState<OrderLine[]>(() => readOrder());
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [fulfillment, setFulfillment] = useState<FulfillmentType>("DELIVERY");
-
-  useEffect(() => {
-    setItems(readOrder());
-  }, []);
 
   function refresh() {
     setItems(readOrder());

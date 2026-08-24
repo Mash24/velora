@@ -32,12 +32,13 @@ export default async function AdminProductPage({
   ]);
   if (!product) notFound();
 
-  let running = product.stockQuantity;
-  const history = movements.map((movement) => {
-    const balance = running;
-    running -= movement.quantity;
-    return { ...movement, balance };
-  });
+  const history = movements.reduce<
+    Array<(typeof movements)[number] & { balance: number }>
+  >((rows, movement) => {
+    const balance =
+      rows.length === 0 ? product.stockQuantity : rows.at(-1)!.balance - rows.at(-1)!.quantity;
+    return [...rows, { ...movement, balance }];
+  }, []);
 
   return (
     <div className="max-w-2xl">

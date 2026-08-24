@@ -23,6 +23,99 @@ type Query = {
 const fieldClass =
   "mt-1.5 min-h-11 w-full min-w-0 rounded-xl border border-navy/15 bg-white px-3 py-2 text-base text-navy sm:rounded-full sm:px-4";
 
+function FilterFields({
+  idPrefix = "",
+  categories,
+  subcategories,
+  bands,
+  category,
+  subcategory,
+  availability,
+  price,
+  sort,
+}: {
+  idPrefix?: string;
+  categories: Category[];
+  subcategories: { id: string; name: string; slug: string }[];
+  bands: Band[];
+  category?: string;
+  subcategory?: string;
+  availability?: string;
+  price?: string;
+  sort?: string;
+}) {
+  return (
+    <>
+      <label className="block min-w-0 text-sm font-medium text-navy">
+        Category
+        <select
+          id={`${idPrefix}category`}
+          name="category"
+          defaultValue={category ?? ""}
+          className={fieldClass}
+        >
+          <option value="">All categories</option>
+          {categories.map((item) => (
+            <option key={item.id} value={item.slug}>
+              {item.name}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="block min-w-0 text-sm font-medium text-navy">
+        Subcategory
+        <select
+          id={`${idPrefix}subcategory`}
+          name="subcategory"
+          defaultValue={subcategory ?? ""}
+          disabled={!category}
+          className={`${fieldClass} disabled:opacity-50`}
+        >
+          <option value="">All subcategories</option>
+          {subcategories.map((item) => (
+            <option key={item.id} value={item.slug}>
+              {item.name}
+            </option>
+          ))}
+        </select>
+        {category && subcategories.length === 0 ? (
+          <span className="mt-1 block text-xs text-navy/55">No subcategories in this group yet.</span>
+        ) : null}
+      </label>
+      <label className="block min-w-0 text-sm font-medium text-navy">
+        Availability
+        <select name="availability" defaultValue={availability ?? ""} className={fieldClass}>
+          <option value="">All</option>
+          <option value="in">In stock</option>
+          <option value="out">Out of stock</option>
+        </select>
+      </label>
+      {bands.length > 0 ? (
+        <label className="block min-w-0 text-sm font-medium text-navy">
+          Price
+          <select name="price" defaultValue={price ?? ""} className={fieldClass}>
+            <option value="">All prices</option>
+            {bands.map((band) => (
+              <option key={band.value} value={band.value}>
+                {band.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : null}
+      <label className="block min-w-0 text-sm font-medium text-navy">
+        Sort
+        <select name="sort" defaultValue={sort ?? ""} className={fieldClass}>
+          <option value="">Relevance</option>
+          <option value="price-asc">Price: low to high</option>
+          <option value="price-desc">Price: high to low</option>
+          <option value="newest">Newest</option>
+        </select>
+      </label>
+    </>
+  );
+}
+
 export function ShopFilters({
   categories,
   subcategories,
@@ -49,78 +142,16 @@ export function ShopFilters({
     return count;
   }, [category, subcategory, availability, price, sort]);
 
-  function FilterFields({ idPrefix = "" }: { idPrefix?: string }) {
-    return (
-      <>
-        <label className="block min-w-0 text-sm font-medium text-navy">
-          Category
-          <select
-            id={`${idPrefix}category`}
-            name="category"
-            defaultValue={category ?? ""}
-            className={fieldClass}
-          >
-            <option value="">All categories</option>
-            {categories.map((item) => (
-              <option key={item.id} value={item.slug}>
-                {item.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="block min-w-0 text-sm font-medium text-navy">
-          Subcategory
-          <select
-            id={`${idPrefix}subcategory`}
-            name="subcategory"
-            defaultValue={subcategory ?? ""}
-            disabled={!category}
-            className={`${fieldClass} disabled:opacity-50`}
-          >
-            <option value="">All subcategories</option>
-            {subcategories.map((item) => (
-              <option key={item.id} value={item.slug}>
-                {item.name}
-              </option>
-            ))}
-          </select>
-          {category && subcategories.length === 0 ? (
-            <span className="mt-1 block text-xs text-navy/55">No subcategories in this group yet.</span>
-          ) : null}
-        </label>
-        <label className="block min-w-0 text-sm font-medium text-navy">
-          Availability
-          <select name="availability" defaultValue={availability ?? ""} className={fieldClass}>
-            <option value="">All</option>
-            <option value="in">In stock</option>
-            <option value="out">Out of stock</option>
-          </select>
-        </label>
-        {bands.length > 0 ? (
-          <label className="block min-w-0 text-sm font-medium text-navy">
-            Price
-            <select name="price" defaultValue={price ?? ""} className={fieldClass}>
-              <option value="">All prices</option>
-              {bands.map((band) => (
-                <option key={band.value} value={band.value}>
-                  {band.label}
-                </option>
-              ))}
-            </select>
-          </label>
-        ) : null}
-        <label className="block min-w-0 text-sm font-medium text-navy">
-          Sort
-          <select name="sort" defaultValue={sort ?? ""} className={fieldClass}>
-            <option value="">Relevance</option>
-            <option value="price-asc">Price: low to high</option>
-            <option value="price-desc">Price: high to low</option>
-            <option value="newest">Newest</option>
-          </select>
-        </label>
-      </>
-    );
-  }
+  const filterProps = {
+    categories,
+    subcategories,
+    bands,
+    category,
+    subcategory,
+    availability,
+    price,
+    sort,
+  };
 
   return (
     <>
@@ -150,7 +181,7 @@ export function ShopFilters({
         </div>
 
         <div className="mt-4 hidden min-w-0 gap-3 lg:grid lg:grid-cols-3">
-          <FilterFields />
+          <FilterFields {...filterProps} />
           <div className="flex items-end lg:col-span-3">
             <button
               type="submit"
@@ -198,7 +229,7 @@ export function ShopFilters({
             >
               <input type="hidden" name="q" value={q ?? ""} />
               <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4">
-                <FilterFields idPrefix="mobile-" />
+                <FilterFields idPrefix="mobile-" {...filterProps} />
               </div>
               <div className="safe-bottom flex shrink-0 gap-3 border-t border-navy/8 px-4 py-4">
                 <button
