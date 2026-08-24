@@ -91,15 +91,15 @@ export default async function HomePage({
                 View all
               </Link>
             </div>
-            <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+            <div className="mt-6 flex gap-2 sm:grid sm:grid-cols-3 sm:gap-4">
               {categories.map((category) => (
                 <Link
                   key={category.id}
                   href={`/shop?category=${category.slug}`}
-                  className="rounded-2xl border border-navy/10 bg-white p-4 shadow-[0_8px_24px_rgba(22,52,76,0.04)] transition hover:-translate-y-0.5 hover:border-teal/30 sm:p-6"
+                  className="flex min-w-0 flex-1 flex-col items-center rounded-2xl border border-navy/10 bg-white p-2.5 text-center shadow-[0_8px_24px_rgba(22,52,76,0.04)] transition hover:-translate-y-0.5 hover:border-teal/30 sm:items-start sm:p-6 sm:text-left"
                 >
-                  <CategoryGlyph slug={category.slug} />
-                  <span className="mt-4 block text-sm font-semibold tracking-tight sm:text-base">
+                  <CategoryGlyph slug={category.slug} size="sm" />
+                  <span className="mt-2 line-clamp-2 text-[11px] leading-snug font-semibold tracking-tight sm:mt-4 sm:text-base">
                     {category.name}
                   </span>
                   <span className="mt-1 hidden text-sm leading-6 text-navy/70 sm:block">
