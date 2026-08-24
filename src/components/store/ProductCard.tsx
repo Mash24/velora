@@ -30,8 +30,8 @@ export function ProductCard({
   const image = images[0];
 
   return (
-    <article className="flex min-w-0 flex-col rounded-2xl border border-navy/10 bg-white p-4 shadow-[0_8px_24px_rgba(22,52,76,0.04)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_40px_rgba(22,52,76,0.08)] sm:p-6 lg:p-8">
-      <div className="mb-4 aspect-[4/3] overflow-hidden rounded-xl bg-mist sm:mb-6 lg:mb-8">
+    <article className="flex min-w-0 flex-col rounded-2xl border border-navy/10 bg-white p-3 shadow-[0_8px_24px_rgba(22,52,76,0.04)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_40px_rgba(22,52,76,0.08)] sm:p-4">
+      <div className="mb-4 aspect-[4/3] overflow-hidden rounded-xl bg-white ring-1 ring-navy/5 sm:mb-5">
         {image ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -41,7 +41,7 @@ export function ProductCard({
             loading="lazy"
           />
         ) : (
-          <div className="grid h-full place-items-center text-teal">
+          <div className="grid h-full place-items-center bg-mist text-teal">
             <span className="text-xs uppercase tracking-[0.2em]">Velora</span>
           </div>
         )}
@@ -58,7 +58,7 @@ export function ProductCard({
       {shortDescription ? (
         <p className="mt-2 line-clamp-2 text-sm text-navy/85">{shortDescription}</p>
       ) : null}
-      <div className="mt-auto flex flex-col gap-3 pt-4 sm:gap-4 sm:pt-6 lg:pt-8">
+      <div className="mt-auto flex flex-col gap-2.5 pt-4">
         <AddToOrderButton
           productId={id}
           name={name}

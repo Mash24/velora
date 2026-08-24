@@ -3,7 +3,6 @@ import { categoryPath } from "@/lib/category-path";
 import { priceWithUnit } from "@/lib/format";
 import { availabilityTone, publicAvailability } from "@/lib/labels";
 import { prisma } from "@/lib/prisma";
-import { productQuestionMessage, whatsappLink } from "@/lib/whatsapp";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -90,12 +89,7 @@ export default async function ProductPage({
       <p className="mt-4 max-w-xl text-navy/80">{product.shortDescription}</p>
       {product.description ? <p className="mt-3 max-w-xl text-navy/80">{product.description}</p> : null}
       <p className="mt-6 text-sm text-navy/70">
-        Delivery is available in Nairobi and across Kenya. We’ll confirm the delivery cost from your
-        location before you pay.
-      </p>
-      <p className="mt-3 text-sm text-navy/70">
-        Availability on this page is a guide, not a guarantee. We confirm what we have after you
-        submit your order request.
+        Delivery is available in Nairobi and across Kenya.
       </p>
       <div className="mt-8 space-y-4">
         <AddToOrderButton
@@ -107,12 +101,6 @@ export default async function ProductPage({
           askUs={product.askForAvailability}
           imageUrl={product.images[0]?.url}
         />
-        <p className="text-sm text-navy/70">
-          Have a question about this product?{" "}
-          <a className="text-teal" href={whatsappLink(productQuestionMessage(product.name))}>
-            Chat with Velora
-          </a>
-        </p>
       </div>
     </div>
   );

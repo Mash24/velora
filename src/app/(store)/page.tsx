@@ -1,39 +1,49 @@
-import { ProductCard } from "@/components/store/ProductCard";
 import { CategoryGlyph } from "@/components/store/CategoryGlyph";
-import { CategoryScrollRow } from "@/components/store/CategoryScrollRow";
+import { DeliveryEstimator } from "@/components/store/DeliveryEstimator";
 import { HomeHero } from "@/components/store/HomeHero";
-import { ProductScrollRow } from "@/components/store/ProductScrollRow";
-import { BUSINESS } from "@/lib/constants";
-import { prisma } from "@/lib/prisma";
+import { ProductCard } from "@/components/store/ProductCard";
+import { BUSINESS, MAPS_EMBED_URL, MAPS_SEARCH_URL } from "@/lib/constants";
 import { CATEGORY_BLURBS } from "@/lib/category-blurbs";
+import { prisma } from "@/lib/prisma";
 import { categoryWithPublishedProducts, publishedProduct } from "@/lib/shop-query";
 import { parseSource } from "@/lib/source";
-import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 
-const mapsUrl =
-  "https://www.google.com/maps/search/?api=1&query=Travis+House+Mfangano+Street+Nairobi";
+const faqs = [
+  {
+    q: "Do you ship outside Nairobi?",
+    a: "Yes. We deliver in Nairobi and arrange courier delivery to other parts of Kenya. Cost and timing depend on your town and the size of the order.",
+  },
+  {
+    q: "How do I pay?",
+    a: "M-Pesa, cash, or pay on delivery. We’ll share the total and payment option when we process your order.",
+  },
+  {
+    q: "Can I pick up from the shop?",
+    a: "Yes. Choose pickup at checkout. The shop is at Travis House, 3rd Floor, Shop A6, Mfangano Street, Nairobi — near Afya Centre, in the building with Quickmart.",
+  },
+  {
+    q: "Do you take clinic or bulk orders?",
+    a: "Yes. Add the products you need and note that it is a bulk or institutional order, or use the bulk-orders page.",
+  },
+];
 
-const steps = [
+const valueProps = [
   {
-    n: "01",
-    title: "Choose",
-    detail: "Find the products you need and add them to your order.",
+    title: "Nairobi & countrywide",
+    detail: "Order from the CBD shop, with delivery arranged across Kenya.",
   },
   {
-    n: "02",
-    title: "Submit",
-    detail: "Submit your order request on this website. You don’t pay yet.",
+    title: "Genuine supplies",
+    detail: "Medical products for home care, clinics and facilities.",
   },
   {
-    n: "03",
-    title: "We confirm",
-    detail: "We check availability and confirm your total and delivery details.",
+    title: "M-Pesa, cash & delivery",
+    detail: "Pay with M-Pesa, cash, or pay on delivery.",
   },
   {
-    n: "04",
-    title: "Pay & receive",
-    detail: "Pay using the agreed option, then we arrange delivery.",
+    title: "Bulk for clinics",
+    detail: "Larger quantities for labs, offices and healthcare buyers.",
   },
 ];
 
@@ -48,7 +58,7 @@ export default async function HomePage({
     prisma.product.findMany({
       where: publishedProduct,
       orderBy: [{ featured: "desc" }, { name: "asc" }],
-      take: 6,
+      take: 8,
       include: { images: true },
     }),
     prisma.category.findMany({
@@ -57,128 +67,122 @@ export default async function HomePage({
     }),
   ]);
 
-  const collageItems = products.flatMap((product) => {
-    const image = product.images[0];
-    if (!image) return [];
-    return [{ url: image.url, alt: image.alt || product.name, slug: product.slug }];
-  });
-
   return (
     <>
-      <HomeHero fromTiktok={fromTiktok} collageItems={collageItems} />
+      <HomeHero fromTiktok={fromTiktok} />
+
+      <section className="bg-white">
+        <div className="site-container grid gap-6 py-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8 lg:py-10">
+          {valueProps.map((item) => (
+            <div key={item.title}>
+              <p className="font-semibold tracking-tight text-navy">{item.title}</p>
+              <p className="mt-1.5 text-sm leading-6 text-navy/70">{item.detail}</p>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {categories.length > 0 ? (
-        <section id="categories" className="scroll-mt-20 md:scroll-mt-24">
-          <CategoryScrollRow categories={categories} />
-          <div className="hidden md:block">
-            <div className="site-container py-12 sm:py-16">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-8">
-                <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">Shop by category</h2>
-                <Link href="/shop" className="text-sm font-medium text-teal">
-                  View all products
+        <section id="categories" className="scroll-mt-28 md:scroll-mt-32">
+          <div className="site-container py-10 sm:py-14">
+            <div className="flex items-end justify-between gap-4">
+              <h2 className="section-heading">Shop by category</h2>
+              <Link href="/shop" className="shrink-0 text-sm font-semibold text-teal">
+                View all
+              </Link>
+            </div>
+            <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+              {categories.map((category) => (
+                <Link
+                  key={category.id}
+                  href={`/shop?category=${category.slug}`}
+                  className="rounded-2xl border border-navy/10 bg-white p-4 shadow-[0_8px_24px_rgba(22,52,76,0.04)] transition hover:-translate-y-0.5 hover:border-teal/30 sm:p-6"
+                >
+                  <CategoryGlyph slug={category.slug} />
+                  <span className="mt-4 block text-sm font-semibold tracking-tight sm:text-base">
+                    {category.name}
+                  </span>
+                  <span className="mt-1 hidden text-sm leading-6 text-navy/70 sm:block">
+                    {CATEGORY_BLURBS[category.slug] ?? "View products in this group."}
+                  </span>
                 </Link>
-              </div>
-              <div className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-                {categories.map((category) => (
-                  <Link
-                    key={category.id}
-                    href={`/shop?category=${category.slug}`}
-                    className="group rounded-2xl border border-navy/10 bg-white p-5 shadow-[0_8px_24px_rgba(22,52,76,0.04)] transition hover:-translate-y-1 hover:border-teal/30 hover:shadow-[0_16px_40px_rgba(22,52,76,0.08)] sm:p-8"
-                  >
-                    <CategoryGlyph slug={category.slug} />
-                    <span className="mt-8 block text-lg font-semibold tracking-tight">{category.name}</span>
-                    <span className="mt-2 block text-sm leading-6 text-navy">
-                      {CATEGORY_BLURBS[category.slug] ?? "View products in this group."}
-                    </span>
-                  </Link>
-                ))}
-              </div>
+              ))}
             </div>
           </div>
         </section>
       ) : null}
 
-      <ProductScrollRow products={products} />
-
-      <section>
-        <div className="site-container py-8 sm:py-12 md:py-16">
-          <div className="hidden md:block">
-            <Link href="/shop" className="group flex items-center gap-2">
-              <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">Products in our shop</h2>
-              <ChevronRight className="h-5 w-5 text-teal transition group-hover:translate-x-0.5" />
-            </Link>
+      {products.length > 0 ? (
+        <section className="bg-white">
+          <div className="site-container py-10 sm:py-14">
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <h2 className="section-heading">Best sellers</h2>
+                <p className="mt-1 text-sm text-navy/70">Prices in KES. Stock shown from the Nairobi shop.</p>
+              </div>
+              <Link href="/shop" className="shrink-0 text-sm font-semibold text-teal">
+                Shop all
+              </Link>
+            </div>
+            <div className="product-grid mt-6">
+              {products.map((product) => (
+                <ProductCard key={product.id} {...product} />
+              ))}
+            </div>
           </div>
-          <div className="product-grid mt-0 hidden md:grid md:mt-8">
-            {products.map((product) => (
-              <ProductCard key={product.id} {...product} />
-            ))}
-          </div>
-        </div>
-      </section>
+        </section>
+      ) : null}
 
-      <section className="border-y border-navy/10 bg-white">
-        <div className="site-container py-10 sm:py-16">
-          <h2 className="text-lg font-semibold tracking-tight text-navy/80">How to order</h2>
-          <ol className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {steps.map((step) => (
-              <li key={step.n}>
-                <p className="text-xs font-medium tracking-[0.08em] text-teal">{step.n}</p>
-                <p className="mt-2 text-base font-semibold tracking-tight">{step.title}</p>
-                <p className="mt-1 text-sm leading-6 text-navy/75">{step.detail}</p>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      <section className="bg-white">
-        <div className="site-container grid gap-10 py-12 sm:gap-16 sm:py-16 lg:grid-cols-2">
+      <section className="border-y border-navy/10">
+        <div className="site-container grid gap-8 py-10 sm:py-14 lg:grid-cols-2">
           <div>
-            <h2 className="text-3xl font-semibold tracking-tight">A shop you can visit</h2>
-            <p className="mt-8 font-medium">{BUSINESS.name}</p>
+            <h2 className="section-heading">Visit the Nairobi shop</h2>
+            <p className="mt-3 font-medium">{BUSINESS.name}</p>
             <p className="mt-2 leading-7 text-navy">{BUSINESS.location}</p>
-            <p className="mt-2 leading-7 text-navy">Near Afya Centre, in the building with Quickmart</p>
-            <p className="mt-4 text-navy">{BUSINESS.phoneDisplay}</p>
-            <div className="mt-8 flex flex-wrap gap-4">
+            <p className="leading-7 text-navy">{BUSINESS.landmark}</p>
+            <p className="mt-3 text-navy">{BUSINESS.phoneDisplay}</p>
+            <p className="mt-4 text-sm leading-6 text-navy/75">
+              Visit the shop to see products, collect an order, or pay in person.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
               <a
-                href={mapsUrl}
-                className="inline-flex h-12 items-center rounded-xl bg-teal px-8 text-sm font-medium text-cream transition hover:bg-teal/90"
+                href={MAPS_SEARCH_URL}
+                className="inline-flex h-12 items-center rounded-xl bg-teal px-6 text-sm font-semibold text-cream"
               >
                 Get directions
               </a>
               <Link
                 href="/contact"
-                className="inline-flex h-12 items-center rounded-xl border border-navy/15 px-8 text-sm font-medium"
+                className="inline-flex h-12 items-center rounded-xl border border-navy/15 px-6 text-sm font-semibold"
               >
                 Contact us
               </Link>
             </div>
+            <iframe
+              title="Velora shop on Google Maps"
+              src={MAPS_EMBED_URL}
+              className="mt-6 h-56 w-full rounded-2xl border-0 ring-1 ring-navy/10 sm:h-72"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
           </div>
-          <div>
-            <h2 className="text-3xl font-semibold tracking-tight">Delivery from Nairobi</h2>
-            <p className="mt-8 leading-7 text-navy">
-              We serve customers in Nairobi and arrange delivery to other parts of Kenya. Cost and
-              timing depend on your location and order. We’ll confirm these details before payment.
-            </p>
-            <Link href="/delivery" className="mt-8 inline-flex h-12 items-center text-sm font-medium text-teal">
-              View delivery information
-            </Link>
-          </div>
+          <DeliveryEstimator />
         </div>
       </section>
 
-      <section className="border-t border-navy/10">
-        <div className="site-container flex flex-col gap-6 py-12 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-8 sm:py-16">
-          <div>
-            <h2 className="text-2xl font-semibold tracking-tight">Buying for a clinic or business?</h2>
-            <p className="mt-2 leading-7 text-navy">We also handle bulk orders.</p>
+      <section>
+        <div className="site-container py-10 sm:py-14">
+          <h2 className="section-heading">Questions, answered</h2>
+          <div className="mt-6 divide-y divide-navy/10 rounded-2xl border border-navy/10 bg-white">
+            {faqs.map((item) => (
+              <details key={item.q} className="group px-5 py-2">
+                <summary className="cursor-pointer list-none py-3 font-semibold tracking-tight [&::-webkit-details-marker]:hidden">
+                  {item.q}
+                </summary>
+                <p className="pb-4 text-sm leading-6 text-navy/75">{item.a}</p>
+              </details>
+            ))}
           </div>
-          <Link
-            href="/bulk-orders"
-            className="inline-flex h-12 items-center rounded-xl border border-navy/15 px-8 text-sm font-medium"
-          >
-            Ask about bulk orders
-          </Link>
         </div>
       </section>
     </>

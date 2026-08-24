@@ -8,13 +8,11 @@ export default function DeliveryPage() {
     <div className="site-container-narrow page-py min-w-0">
       <h1 className="text-3xl font-semibold">Delivery</h1>
       <p className="mt-4 text-navy">
-        We serve customers in Nairobi and arrange delivery to other parts of Kenya. Delivery cost
-        and timing depend on your location and order. You also pay for delivery. We’ll confirm these
-        details before payment.
+        We deliver in Nairobi and arrange courier delivery to other parts of Kenya. Delivery cost
+        and timing depend on your location and the size of the order.
       </p>
       <p className="mt-4 text-navy">
-        We’ll confirm the total and payment options before you pay. How and when you pay is agreed
-        when we confirm the order.
+        You can also collect from the shop. Pay with M-Pesa, cash, or pay on delivery.
       </p>
       <p className="mt-4 text-navy">{BUSINESS.location}</p>
       <Link href="/shop" className="mt-8 inline-flex min-h-11 items-center text-sm text-teal">

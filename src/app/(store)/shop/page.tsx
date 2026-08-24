@@ -13,7 +13,7 @@ import {
 export const metadata = {
   title: "Shop",
   description:
-    "Browse Velora medical supplies, check prices and submit your order request. We confirm availability before you pay.",
+    "Browse Velora medical supplies from our Nairobi shop, with delivery across Kenya.",
 };
 
 export default async function ShopPage({
@@ -62,8 +62,7 @@ export default async function ShopPage({
     <div className="site-container page-py min-w-0">
       <h1 className="page-heading">Shop medical supplies</h1>
       <p className="mt-2 max-w-2xl text-navy/70">
-        Search or filter, then add products to your order. We’ll confirm availability and delivery
-        before you pay.
+        Search or filter, then add products to your order.
       </p>
 
       <ShopFilters

@@ -46,8 +46,7 @@ export default async function OrderConfirmationPage({
       <p className="text-xs uppercase tracking-[0.2em] text-teal">Order request received</p>
       <h1 className="mt-3 text-3xl font-semibold">Order request #{order.orderNumber}</h1>
       <p className="mt-4 text-navy/80">
-        You don&apos;t need to pay yet. We&apos;ll contact you on{" "}
-        <strong>{order.customer.phone}</strong> to confirm your order and tell you how to pay.
+        We&apos;ll contact you on <strong>{order.customer.phone}</strong> about payment and delivery.
       </p>
       {order.customer.email ? (
         <p className="mt-2 text-sm text-navy/70">

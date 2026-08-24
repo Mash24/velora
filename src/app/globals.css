@@ -78,8 +78,21 @@ h3 {
 }
 
 .page-heading {
-  font-size: clamp(1.625rem, 4vw, 1.875rem);
+  font-size: clamp(1.75rem, 4vw, 2.25rem);
   font-weight: 600;
+}
+
+.hero-heading {
+  font-size: clamp(1.85rem, 6vw, 3.25rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1.08;
+}
+
+.section-heading {
+  font-size: clamp(1.35rem, 3vw, 1.85rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
 }
 
 .break-anywhere {

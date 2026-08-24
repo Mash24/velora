@@ -1,100 +1,91 @@
-import { ProductCollage } from "@/components/store/ProductCollage";
-import { BrandLogo } from "@/components/store/BrandLogo";
-import { Search } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
-
-type CollageItem = {
-  url: string;
-  alt: string;
-  slug: string;
-};
 
 type HomeHeroProps = {
   fromTiktok: boolean;
-  collageItems: CollageItem[];
 };
 
-export function HomeHero({ fromTiktok, collageItems }: HomeHeroProps) {
+export function HomeHero({ fromTiktok }: HomeHeroProps) {
   return (
-    <section className="border-b border-navy/10 bg-paper">
-      <div className="site-container grid items-center gap-6 py-5 sm:gap-10 sm:py-10 lg:grid-cols-2 lg:gap-16 lg:py-24">
-        <div className="min-w-0">
-          {/* Product collage — mobile only, above the headline */}
-          <div className="lg:hidden">
-            <ProductCollage items={collageItems} />
-          </div>
+    <section className="relative overflow-hidden bg-navy text-cream">
+      <div className="absolute inset-0 lg:left-[36%]">
+        <Image
+          src="/images/home-hero.png"
+          alt="Healthcare professional preparing medical supplies in a Nairobi clinic"
+          fill
+          priority
+          sizes="(min-width: 1024px) 64vw, 100vw"
+          className="object-cover object-[center_18%] lg:object-center"
+        />
+        <div
+          className="absolute inset-0 bg-gradient-to-b from-navy/25 via-navy/70 to-navy lg:hidden"
+          aria-hidden
+        />
+        <div
+          className="absolute inset-0 hidden lg:block"
+          style={{
+            background:
+              "linear-gradient(90deg, var(--color-navy) 0%, rgba(22, 52, 76, 0.88) 18%, rgba(22, 52, 76, 0.42) 42%, rgba(22, 52, 76, 0.12) 68%, transparent 100%)",
+          }}
+          aria-hidden
+        />
+        <div
+          className="absolute inset-0 hidden lg:block"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(22, 52, 76, 0.35) 0%, transparent 22%, transparent 72%, rgba(22, 52, 76, 0.55) 100%)",
+          }}
+          aria-hidden
+        />
+        <div
+          className="absolute inset-0 opacity-50 mix-blend-soft-light"
+          style={{
+            background:
+              "radial-gradient(70% 80% at 80% 40%, rgba(14, 124, 123, 0.45), transparent 62%)",
+          }}
+          aria-hidden
+        />
+      </div>
 
+      <div className="site-container relative grid min-h-[34rem] items-end py-10 sm:min-h-[36rem] sm:py-14 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:min-h-[36rem] lg:items-center lg:py-20">
+        <div className="relative min-w-0 pt-24 sm:pt-28 lg:pt-0">
           {fromTiktok ? (
-            <p className="mt-4 text-sm font-medium text-teal lg:mt-0">
-              Welcome from TikTok — order right here.
+            <p className="text-sm font-semibold text-teal">Welcome from TikTok — order right here.</p>
+          ) : (
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal">
+              Nairobi CBD shop · Delivery across Kenya
             </p>
-          ) : null}
+          )}
 
-          <p
-            className={`text-xs font-semibold uppercase tracking-[0.12em] text-teal sm:text-sm ${fromTiktok ? "mt-2" : "mt-3 lg:mt-0"}`}
-          >
-            Nairobi shop · Delivery across Kenya
-          </p>
-
-          <h1 className="page-heading mt-2">
-            Medical supplies for home, work and healthcare.
+          <h1 className="hero-heading mt-3 text-cream">
+            Medical supplies for clinics, caregivers and home care.
           </h1>
-
-          {/* Shorter on mobile, fuller on sm+ */}
-          <p className="mt-2 text-sm leading-relaxed text-navy/75 sm:hidden">
-            Browse, request an order, and we&apos;ll confirm before you pay.
-          </p>
-          <p className="mt-5 hidden max-w-lg text-lg leading-8 text-navy sm:block">
-            Browse medical supplies from our Nairobi shop. Choose what you need, submit your order
-            request and we&apos;ll confirm availability and delivery before payment.
+          <p className="mt-4 max-w-xl text-base leading-7 text-cream/80 sm:text-lg sm:leading-8">
+            Shop from our Mfangano Street store in Nairobi CBD, with delivery across Kenya.
           </p>
 
-          {/* CTAs */}
-          <div className="mt-4 flex flex-col gap-2.5 sm:mt-7 sm:gap-3">
-            {/* Primary — coral accent, high contrast */}
+          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <Link
               href="/shop"
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-coral px-7 text-sm font-bold text-white shadow-[0_4px_14px_rgba(196,92,38,0.35)] transition hover:bg-coral/90 active:scale-[0.98] sm:w-fit"
+              className="inline-flex h-12 items-center justify-center rounded-xl bg-coral px-7 text-sm font-bold text-white shadow-[0_8px_24px_rgba(196,92,38,0.35)] transition hover:bg-coral/90"
             >
-              Shop products
-              <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none" aria-hidden>
-                <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              Shop supplies
             </Link>
-
-            {/* Search bar — visible border, filled "Go" pill */}
-            <form action="/shop" method="get" className="relative min-w-0">
-              <label className="sr-only" htmlFor="home-search">Search products</label>
-              <Search
-                className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-navy/40"
-                aria-hidden
-              />
-              <input
-                id="home-search"
-                name="q"
-                placeholder="Search gloves, masks, stethoscopes…"
-                className="h-12 w-full min-w-0 rounded-xl border-2 border-navy/20 bg-white pr-20 pl-10 text-base text-navy outline-none placeholder:text-navy/35 focus:border-teal/50 focus:ring-2 focus:ring-teal/10"
-              />
-              <button
-                type="submit"
-                className="absolute top-1/2 right-1.5 inline-flex h-9 -translate-y-1/2 items-center justify-center rounded-lg bg-navy px-4 text-xs font-semibold text-cream transition hover:bg-teal"
-                aria-label="Search products"
-              >
-                Search
-              </button>
-            </form>
+            <Link
+              href="/bulk-orders"
+              className="inline-flex h-12 items-center justify-center rounded-xl border border-cream/25 bg-cream/5 px-7 text-sm font-semibold text-cream backdrop-blur-sm hover:bg-cream/10"
+            >
+              Clinic & bulk orders
+            </Link>
           </div>
         </div>
-
-        {/* Desktop decoration */}
-        <div className="relative hidden min-h-[420px] items-center justify-center lg:flex">
-          <div className="absolute inset-8 rounded-full border border-teal/20" />
-          <div className="absolute inset-16 rounded-full border border-navy/10" />
-          <div className="relative p-8 sm:p-12">
-            <BrandLogo className="h-44 w-auto" priority />
-          </div>
-        </div>
+        <div className="hidden min-h-[22rem] lg:block" aria-hidden />
       </div>
+
+      <div
+        className="pointer-events-none relative h-16 bg-gradient-to-b from-transparent to-white sm:h-20"
+        aria-hidden
+      />
     </section>
   );
 }

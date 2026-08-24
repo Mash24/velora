@@ -53,13 +53,7 @@ export function AddToOrderButton({
   return (
     <div className="space-y-3">
       {!inStock && !askUs ? (
-        <p className="text-sm text-navy/70">
-          This is showing as out of stock. You can still add it to your order. We’ll confirm if we
-          have it.
-        </p>
-      ) : null}
-      {askUs ? (
-        <p className="text-sm text-navy/70">We’ll confirm whether this is available after you submit your order request.</p>
+        <p className="text-sm text-navy/70">This item is currently out of stock.</p>
       ) : null}
       <div className="flex items-center gap-3">
         <span className="text-sm">Quantity</span>

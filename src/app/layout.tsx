@@ -1,5 +1,6 @@
 import { BUSINESS } from "@/lib/constants";
-import type { Metadata } from "next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
@@ -10,6 +11,12 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://velora-brown-tau.vercel.app";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -26,7 +33,7 @@ export const metadata: Metadata = {
     siteName: BUSINESS.name,
     title: BUSINESS.name,
     description:
-      "Find medical supplies, check prices, and submit your order request. We confirm availability and delivery before you pay.",
+      "Find medical supplies, check prices, and order from our Nairobi shop. Delivery across Kenya.",
     images: [{ url: "/logo/velora-mark.png", alt: "Velora Medical Supplies" }],
   },
   icons: {
@@ -38,7 +45,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en-KE" className={`${jakarta.variable} h-full antialiased`}>
-      <body className={`${jakarta.className} min-h-full`}>{children}</body>
+      <body className={`${jakarta.className} min-h-full`}>
+        {children}
+        <SpeedInsights />
+      </body>
     </html>
   );
 }

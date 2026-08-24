@@ -68,9 +68,7 @@ export function OrderStatusView({ order }: { order: PublicOrderView }) {
       ) : null}
 
       {order.status === "ENQUIRY" ? (
-        <p className="text-sm text-navy/70">
-          You don&apos;t need to pay yet. We&apos;ll contact you to confirm your order.
-        </p>
+        <p className="text-sm text-navy/70">We&apos;ll be in touch about payment and delivery.</p>
       ) : null}
     </div>
   );

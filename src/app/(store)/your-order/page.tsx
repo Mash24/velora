@@ -93,10 +93,7 @@ export default function YourOrderPage() {
       </Link>
 
       <h1 className="page-heading mt-4">Your order</h1>
-      <p className="mt-2 text-navy/70">
-        Review the products you&apos;d like to order. We&apos;ll confirm availability and the final
-        total before you pay.
-      </p>
+      <p className="mt-2 text-navy/70">Review your products and place your order.</p>
 
       {items.length === 0 ? (
         <p className="mt-8 text-navy/70">
@@ -132,14 +129,14 @@ export default function YourOrderPage() {
               <div className="flex justify-between gap-4">
                 <dt className="text-navy/70">{fulfillment === "PICKUP" ? "Pickup" : "Delivery"}</dt>
                 <dd className="text-navy/60">
-                  {fulfillment === "PICKUP" ? "At our shop" : "To be confirmed"}
+                  {fulfillment === "PICKUP" ? "At our shop" : "Quoted for your location"}
                 </dd>
               </div>
             </dl>
             <p className="mt-3 border-t border-navy/10 pt-3 text-xs text-navy/60">
               {fulfillment === "DELIVERY"
-                ? "Delivery cost is not included yet — we’ll confirm it before you pay."
-                : "We’ll confirm availability before you pay."}
+                ? "Delivery is added based on your location."
+                : "Collect from our Nairobi CBD shop."}
             </p>
           </section>
 
@@ -167,7 +164,7 @@ export default function YourOrderPage() {
                   className={fieldClass}
                 />
                 <span className="mt-1.5 block text-xs font-normal text-navy/60">
-                  We&apos;ll contact you on this number to confirm your order.
+                  We&apos;ll use this number for your order.
                 </span>
               </label>
               <label className="block text-sm font-medium text-navy">
@@ -284,11 +281,10 @@ export default function YourOrderPage() {
                   disabled={saving}
                   className="min-h-12 w-full rounded-full bg-navy px-4 py-3 text-sm font-medium text-cream disabled:opacity-60"
                 >
-                  {saving ? "Submitting..." : "Submit order request"}
+                  {saving ? "Placing order..." : "Place order"}
                 </button>
                 <p className="mt-3 text-center text-xs text-navy/70">
-                  You don&apos;t need to pay yet. We&apos;ll contact you to confirm your order and
-                  tell you how to pay.
+                  Pay with M-Pesa, cash, or pay on delivery.
                 </p>
               </div>
             </div>
