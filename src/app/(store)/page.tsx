@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { CATEGORY_BLURBS } from "@/lib/category-blurbs";
 import { categoryWithPublishedProducts, publishedProduct } from "@/lib/shop-query";
 import { parseSource } from "@/lib/source";
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 const mapsUrl =
@@ -101,10 +102,10 @@ export default async function HomePage({
 
       <section>
         <div className="site-container py-8 sm:py-12 md:py-16">
-          <div className="hidden flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-8 md:flex">
-            <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">Products in our shop</h2>
-            <Link href="/shop" className="text-sm font-medium text-teal">
-              Shop products
+          <div className="hidden md:block">
+            <Link href="/shop" className="group flex items-center gap-2">
+              <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">Products in our shop</h2>
+              <ChevronRight className="h-5 w-5 text-teal transition group-hover:translate-x-0.5" />
             </Link>
           </div>
           <div className="product-grid mt-0 hidden md:grid md:mt-8">

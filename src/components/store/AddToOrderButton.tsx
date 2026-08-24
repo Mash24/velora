@@ -39,9 +39,13 @@ export function AddToOrderButton({
       <button
         type="button"
         onClick={() => add(1)}
-        className="min-h-11 w-full rounded-xl bg-navy px-4 text-sm font-medium text-cream"
+        className={`min-h-11 w-full rounded-xl px-4 text-sm font-semibold transition active:scale-[0.98] ${
+          added
+            ? "bg-teal/10 text-teal ring-1 ring-teal/30"
+            : "bg-coral text-white shadow-[0_3px_10px_rgba(196,92,38,0.3)] hover:bg-coral/90"
+        }`}
       >
-        {added ? "Added to your order" : "Add to your order"}
+        {added ? "✓ Added to order" : "Add to your order"}
       </button>
     );
   }
@@ -80,9 +84,13 @@ export function AddToOrderButton({
       <button
         type="button"
         onClick={() => add()}
-        className="min-h-11 rounded-full bg-navy px-5 py-3 text-sm font-medium text-cream"
+        className={`min-h-11 rounded-full px-5 py-3 text-sm font-semibold transition active:scale-[0.98] ${
+          added
+            ? "bg-teal/10 text-teal ring-1 ring-teal/30"
+            : "bg-coral text-white shadow-[0_3px_12px_rgba(196,92,38,0.3)] hover:bg-coral/90"
+        }`}
       >
-        {added ? "Added to your order" : "Add to your order"}
+        {added ? "✓ Added to order" : "Add to your order"}
       </button>
       {added ? (
         <Link href="/your-order" className="block text-sm text-teal">

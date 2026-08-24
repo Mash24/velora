@@ -159,6 +159,17 @@ h3 {
   scroll-snap-align: start;
 }
 
+@keyframes badge-bounce {
+  0%, 100% { transform: scale(1); }
+  30% { transform: scale(1.25); }
+  60% { transform: scale(0.92); }
+  80% { transform: scale(1.08); }
+}
+
+.badge-bounce {
+  animation: badge-bounce 0.45s ease-out;
+}
+
 .scroll-row-bleed {
   margin-inline: calc(-1 * max(1rem, env(safe-area-inset-left, 0px)));
   padding-inline: max(1rem, env(safe-area-inset-left, 0px));
