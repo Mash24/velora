@@ -139,6 +139,10 @@ model Product {
   images             ProductImage[]
   orderItems         OrderItem[]
   movements          InventoryMovement[]
+
+  @@index([categoryId])
+  @@index([isActive, featured])
+  @@index([isActive, name])
 }
 
 model ProductImage {
@@ -147,6 +151,8 @@ model ProductImage {
   alt       String?
   productId String
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
 }
 
 model InventoryMovement {
@@ -158,6 +164,9 @@ model InventoryMovement {
   reference String?
   reason    String?
   createdAt DateTime               @default(now())
+
+  @@index([productId])
+  @@index([productId, createdAt])
 }
 
 model Customer {
@@ -199,6 +208,13 @@ model Order {
   payment            Payment?
   delivery           Delivery?
   events             OrderEvent[]
+
+  @@index([status, createdAt])
+  @@index([createdAt])
+  @@index([customerId])
+  @@index([fromWebsiteRequest, createdAt])
+  @@index([confirmedAt])
+  @@index([completedAt])
 }
 
 model OrderEvent {
@@ -221,6 +237,9 @@ model OrderItem {
   quantity     Int
   unitPriceKes Int
   lineTotalKes Int
+
+  @@index([orderId])
+  @@index([productId])
 }
 
 model Payment {

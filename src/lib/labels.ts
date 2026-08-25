@@ -2,8 +2,8 @@ export function orderStatusLabel(status: string) {
   const labels: Record<string, string> = {
     ENQUIRY: "New order",
     CONFIRMED: "Confirmed",
-    PROCESSING: "Processing",
-    COMPLETED: "Completed",
+    PROCESSING: "Confirmed",
+    COMPLETED: "Closed",
     CANCELLED: "Cancelled",
   };
   return labels[status] ?? status;

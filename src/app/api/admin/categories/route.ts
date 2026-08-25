@@ -1,6 +1,7 @@
 import { slugify } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
+import { revalidateStoreCatalog } from "@/lib/revalidate-store";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -27,11 +28,13 @@ export async function POST(request: Request) {
         categoryId: parentId,
       },
     });
+    revalidateStoreCatalog();
     return NextResponse.json({ ok: true });
   }
 
   await prisma.category.create({
     data: { name, slug: `${slugBase}-${Date.now().toString(36)}` },
   });
+  revalidateStoreCatalog();
   return NextResponse.json({ ok: true });
 }

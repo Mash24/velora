@@ -28,9 +28,12 @@ export function DashboardFilters({
       <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
         <div className="shrink-0">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-navy/60">
-            Reporting period
+            How the shop is doing
           </p>
           <p className="mt-1 text-base font-semibold text-navy">{periodLabel}</p>
+          <p className="mt-1 max-w-sm text-sm text-navy/60">
+            Optional numbers — finish new orders first.
+          </p>
         </div>
 
         <div className="w-full lg:max-w-lg">

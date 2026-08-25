@@ -39,15 +39,14 @@ export function OrderStatusSummary({
         delivery: { address: deliveryAddress ?? "", status: deliveryStatus, zone: deliveryZone ?? "NAIROBI" },
       })
     : deliveryStatusLabel(deliveryStatus);
+  const isPickup = fulfillmentValue.toLowerCase().includes("pickup") || fulfillmentValue.toLowerCase().includes("collect");
 
   return (
     <div className="mt-4 flex flex-wrap gap-2">
-      <AdminBadge tone={orderBadgeTone(status)}>Order · {orderStatusLabel(status)}</AdminBadge>
-      <AdminBadge tone={paymentBadgeTone(paymentStatus)}>
-        Payment · {paymentStatusLabel(paymentStatus)}
-      </AdminBadge>
+      <AdminBadge tone={orderBadgeTone(status)}>{orderStatusLabel(status)}</AdminBadge>
+      <AdminBadge tone={paymentBadgeTone(paymentStatus)}>{paymentStatusLabel(paymentStatus)}</AdminBadge>
       <AdminBadge tone="neutral">
-        {isEnquiry ? "Fulfillment" : "Delivery"} · {fulfillmentValue}
+        {isPickup ? "Pickup" : "Delivery"} · {fulfillmentValue}
       </AdminBadge>
     </div>
   );

@@ -1,6 +1,7 @@
 import { AddToOrderButton } from "@/components/store/AddToOrderButton";
 import { formatKes } from "@/lib/format";
 import { availabilityTone, publicAvailability } from "@/lib/labels";
+import Image from "next/image";
 import Link from "next/link";
 
 type ProductCardProps = {
@@ -31,14 +32,14 @@ export function ProductCard({
   return (
     <article className="flex min-w-0 flex-col overflow-hidden rounded-xl border border-navy/10 bg-white shadow-[0_8px_24px_rgba(22,52,76,0.04)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_40px_rgba(22,52,76,0.08)] sm:rounded-2xl">
       <Link href={`/product/${slug}`} className="min-w-0">
-        <div className="aspect-square overflow-hidden bg-mist/60 p-2 sm:p-3">
+        <div className="relative aspect-square overflow-hidden bg-mist/60 p-2 sm:p-3">
           {image ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               src={image.url}
               alt={image.alt || name}
-              className="h-full w-full object-contain"
-              loading="lazy"
+              fill
+              sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+              className="object-contain p-2 sm:p-3"
             />
           ) : (
             <div className="grid h-full place-items-center text-[10px] uppercase tracking-[0.18em] text-teal sm:text-xs">

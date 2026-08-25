@@ -9,7 +9,7 @@ import { formatKes } from "@/lib/format";
 import { paymentMethodLabel, paymentStatusLabel } from "@/lib/labels";
 import { splitOrderNotes } from "@/lib/order-notes";
 import { prisma } from "@/lib/prisma";
-import { formatDisplayPhone } from "@/lib/phone";
+import { formatDisplayPhone, normalizeKenyanPhone } from "@/lib/phone";
 import { sourceLabel } from "@/lib/source";
 import { notFound } from "next/navigation";
 
@@ -41,6 +41,7 @@ export default async function AdminOrderDetailPage({
   const deliveryAddress = order.delivery?.address ?? "";
   const isEnquiry = order.status === "ENQUIRY";
   const { customerNote } = splitOrderNotes(order.notes);
+  const waPhone = normalizeKenyanPhone(order.customer.phone).replace(/\D/g, "");
 
   return (
     <div className="min-w-0 w-full max-w-3xl">
@@ -48,7 +49,16 @@ export default async function AdminOrderDetailPage({
         title={order.orderNumber}
         backHref="/admin/orders"
         backLabel="Orders"
-        meta={formatAdminDateTime(order.createdAt)}
+        meta={
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <span>{formatAdminDateTime(order.createdAt)}</span>
+            <span className="font-semibold tabular-nums text-navy">
+              {isEnquiry && order.deliveryFeeKes === 0
+                ? `Est. ${formatKes(order.subtotalKes)}`
+                : formatKes(order.totalKes)}
+            </span>
+          </div>
+        }
       />
 
       <OrderStatusSummary
@@ -59,14 +69,6 @@ export default async function AdminOrderDetailPage({
         deliveryZone={order.delivery?.zone}
       />
 
-      {isEnquiry ? (
-        <div className="mt-4">
-          <AdminNotice tone="info">
-            Call the customer to confirm availability{pickup ? "" : " and quote delivery"}, then
-            confirm the sale.
-          </AdminNotice>
-        </div>
-      ) : null}
       {order.refundRequired ? (
         <div className="mt-4">
           <AdminNotice tone="warn">
@@ -76,14 +78,24 @@ export default async function AdminOrderDetailPage({
         </div>
       ) : null}
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-2">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2">
         <AdminCard title="Customer">
           <p className="text-lg font-semibold text-navy">{order.customer.name}</p>
           <p className="mt-1 text-navy/70">{formatDisplayPhone(order.customer.phone)}</p>
           {order.customer.email ? <p className="text-navy/70">{order.customer.email}</p> : null}
-          <a href={`tel:${order.customer.phone}`} className={`${adminButtonClass("primary")} mt-4`}>
-            Call customer
-          </a>
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+            <a href={`tel:${order.customer.phone}`} className={`${adminButtonClass("primary")} flex-1`}>
+              Call
+            </a>
+            <a
+              href={`https://wa.me/${waPhone}`}
+              target="_blank"
+              rel="noreferrer"
+              className={`${adminButtonClass("secondary")} flex-1`}
+            >
+              WhatsApp
+            </a>
+          </div>
           <p className="mt-4 text-sm text-navy/50">Found us via {sourceLabel(order.source)}</p>
           {customerNote ? (
             <div className="mt-4 border-t border-navy/8 pt-4">
@@ -96,12 +108,16 @@ export default async function AdminOrderDetailPage({
         </AdminCard>
 
         <AdminCard title={pickup ? "Pickup" : "Delivery"}>
-          <p className="text-sm text-navy/65">{orderFulfillmentLabel(deliveryAddress, order.delivery?.zone)}</p>
-          <p className="mt-2 text-sm text-navy/85">
-            {pickup ? pickupAddressDisplay(deliveryAddress) : deliveryAddress}
+          <p className="text-sm font-medium text-navy/80">
+            {orderFulfillmentLabel(deliveryAddress, order.delivery?.zone)}
+          </p>
+          <p className="mt-2 text-sm leading-6 text-navy/85">
+            {pickup ? pickupAddressDisplay(deliveryAddress) : deliveryAddress || "—"}
           </p>
           {order.delivery?.failureReason ? (
-            <p className="mt-3 text-sm text-coral">Last failure: {order.delivery.failureReason}</p>
+            <p className="mt-3 rounded-lg bg-coral/5 px-3 py-2 text-sm text-coral">
+              Last failure: {order.delivery.failureReason}
+            </p>
           ) : null}
         </AdminCard>
       </div>
@@ -109,6 +125,7 @@ export default async function AdminOrderDetailPage({
       {isEnquiry ? (
         <EnquiryEditor
           orderId={order.id}
+          customerPhone={order.customer.phone}
           items={order.items}
           notes={order.notes ?? ""}
           paymentMethod={order.payment?.method ?? "OTHER"}
@@ -118,25 +135,30 @@ export default async function AdminOrderDetailPage({
         />
       ) : (
         <AdminCard title="Items" className="mt-4">
-          <ul className="space-y-2 text-sm">
+          <ul className="space-y-1 text-sm">
             {order.items.map((item) => (
-              <li key={item.id} className="flex justify-between gap-3 border-b border-navy/6 py-2 last:border-0">
-                <span>
-                  {item.name}
-                  <span className="block text-navy/50">
+              <li
+                key={item.id}
+                className="flex justify-between gap-3 border-b border-navy/6 py-2.5 last:border-0"
+              >
+                <span className="min-w-0">
+                  <span className="break-anywhere font-medium text-navy">{item.name}</span>
+                  <span className="mt-0.5 block text-navy/50">
                     {item.quantity} × {formatKes(item.unitPriceKes)}
                   </span>
                 </span>
-                <span className="tabular-nums font-medium">{formatKes(item.lineTotalKes)}</span>
+                <span className="shrink-0 tabular-nums font-medium text-navy">
+                  {formatKes(item.lineTotalKes)}
+                </span>
               </li>
             ))}
-            <li className="flex justify-between border-t border-navy/8 pt-3">
-              <span className="text-navy/65">Delivery</span>
+            <li className="flex justify-between border-t border-navy/8 pt-3 text-navy/70">
+              <span>Delivery</span>
               <span>{order.deliveryFeeKes ? formatKes(order.deliveryFeeKes) : "—"}</span>
             </li>
-            <li className="flex justify-between pt-1 text-base font-semibold">
+            <li className="flex justify-between pt-2 text-base font-semibold text-navy">
               <span>Total</span>
-              <span>{formatKes(order.totalKes)}</span>
+              <span className="tabular-nums">{formatKes(order.totalKes)}</span>
             </li>
           </ul>
         </AdminCard>
@@ -144,13 +166,13 @@ export default async function AdminOrderDetailPage({
 
       {!isEnquiry && order.notes ? (
         <AdminCard title="Notes" className="mt-4">
-          <p className="whitespace-pre-wrap text-sm text-navy/80">{order.notes}</p>
+          <p className="whitespace-pre-wrap text-sm leading-6 text-navy/80">{order.notes}</p>
         </AdminCard>
       ) : null}
 
       {!isEnquiry ? (
         <AdminCard title="Payment" className="mt-4">
-          <p className="text-sm">
+          <p className="text-sm font-medium text-navy">
             {paymentMethodLabel(order.payment?.method ?? "OTHER")} ·{" "}
             {paymentStatusLabel(order.payment?.status ?? "UNPAID")}
           </p>
@@ -166,6 +188,7 @@ export default async function AdminOrderDetailPage({
         paymentStatus={order.payment?.status ?? "UNPAID"}
         deliveryStatus={order.delivery?.status ?? "PENDING"}
         totalKes={order.totalKes}
+        pickup={pickup}
       />
 
       <AdminCard title="Activity" className="mt-6">

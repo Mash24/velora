@@ -1,5 +1,6 @@
 import { DomainError, cancelOrder, confirmOrder, markDelivered, markDeliveryFailed, markOrderStatus, markOutForDelivery, markPaymentPaid, updateEnquiry } from "@/lib/operations";
 import { requireAdmin } from "@/lib/require-admin";
+import { revalidateStoreCatalog } from "@/lib/revalidate-store";
 import { DeliveryZone, OrderStatus, PaymentMethod } from "@prisma/client";
 import { NextResponse } from "next/server";
 
@@ -43,6 +44,11 @@ export async function POST(
             : Math.max(0, Number(body.deliveryFeeKes) || 0),
       });
     } else return NextResponse.json({ error: "Unknown action." }, { status: 400 });
+
+    // Confirm/cancel change stock; keep home/shop labels in sync.
+    if (action === "confirm" || action === "cancel") {
+      revalidateStoreCatalog();
+    }
 
     return NextResponse.json({ ok: true });
   } catch (error) {

@@ -1,10 +1,15 @@
 const BUCKET = "product-images";
 
+/** Strip whitespace/newlines that break browsers and Next preload selectors. */
+export function sanitizePublicUrl(url: string) {
+  return url.replace(/[\r\n\t\s]+/g, "").trim();
+}
+
 function supabaseConfig() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) throw new Error("Supabase storage is not configured.");
-  return { url: url.replace(/\/$/, ""), key };
+  return { url: sanitizePublicUrl(url.replace(/\/$/, "")), key };
 }
 
 export async function uploadProductImage(file: File, productId: string) {
@@ -36,5 +41,5 @@ export async function uploadProductImage(file: File, productId: string) {
     const text = await upload.text();
     throw new Error(text || "Could not upload the photo.");
   }
-  return `${url}/storage/v1/object/public/${BUCKET}/${path}`;
+  return sanitizePublicUrl(`${url}/storage/v1/object/public/${BUCKET}/${path}`);
 }

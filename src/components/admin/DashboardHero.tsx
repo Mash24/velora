@@ -25,7 +25,7 @@ export function DashboardHero({
       <div className="relative flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between sm:gap-8">
         <div className="min-w-0">
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-teal">Velora admin</p>
-          <h1 className="mt-2 text-[1.45rem] font-semibold tracking-tight text-cream sm:text-3xl break-anywhere">
+          <h1 className="mt-2 break-anywhere text-[clamp(1.25rem,4.5vw,1.875rem)] font-semibold tracking-tight text-cream">
             {greeting}, {name}
           </h1>
           <p className="mt-2 text-sm font-medium text-cream/75">{dateLabel}</p>
@@ -41,15 +41,15 @@ export function DashboardHero({
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
           <Link
             href="/admin/orders?status=ENQUIRY"
-            className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-cream/30 px-4 text-sm font-semibold text-cream transition hover:bg-cream/10 sm:w-auto"
+            className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-teal px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-teal/90 sm:w-auto"
           >
-            Review orders
+            {newOrders > 0 ? `Open ${newOrders} new order${newOrders === 1 ? "" : "s"}` : "Open orders"}
           </Link>
           <Link
             href="/admin/sales/new"
-            className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-teal px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-teal/90 sm:w-auto"
+            className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-cream/30 px-4 text-sm font-semibold text-cream transition hover:bg-cream/10 sm:w-auto"
           >
-            Record sale
+            Record a sale
           </Link>
         </div>
       </div>

@@ -19,18 +19,18 @@ const groups: {
   links: { href: string; label: string; icon: LucideIcon; exact?: boolean }[];
 }[] = [
   {
-    title: "Day to day",
+    title: "Today",
     links: [
-      { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
+      { href: "/admin", label: "Home", icon: LayoutDashboard, exact: true },
       { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
-      { href: "/admin/sales/new", label: "Record sale", icon: PlusCircle },
+      { href: "/admin/sales/new", label: "Record a sale", icon: PlusCircle },
     ],
   },
   {
-    title: "Catalogue",
+    title: "Shop",
     links: [
-      { href: "/admin/inventory", label: "Inventory", icon: Warehouse },
       { href: "/admin/products", label: "Products", icon: Package },
+      { href: "/admin/inventory", label: "Stock", icon: Warehouse },
       { href: "/admin/categories", label: "Categories", icon: FolderTree },
     ],
   },
@@ -67,14 +67,14 @@ export function AdminNav({ onNavigate }: { onNavigate?: () => void }) {
                   <Link
                     href={link.href}
                     onClick={onNavigate}
-                    className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
+                    className={`flex min-h-11 min-w-0 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
                       isActive
                         ? "bg-teal text-white shadow-[0_6px_16px_rgba(14,124,123,0.35)]"
                         : "text-cream/85 hover:bg-white/10 hover:text-cream"
                     }`}
                   >
                     <Icon className="h-4 w-4 shrink-0" />
-                    {link.label}
+                    <span className="min-w-0 truncate">{link.label}</span>
                   </Link>
                 </li>
               );

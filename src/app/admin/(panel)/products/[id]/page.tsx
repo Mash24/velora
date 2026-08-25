@@ -44,8 +44,8 @@ export default async function AdminProductPage({
     <div className="max-w-2xl">
       <AdminPageHeader
         title={product.name}
-        backHref="/admin/inventory"
-        backLabel="Inventory"
+        backHref="/admin/products"
+        backLabel="Products"
         meta={
           <>
             On shelf: {product.stockQuantity} {product.stockUnit}
@@ -53,8 +53,8 @@ export default async function AdminProductPage({
           </>
         }
         actions={
-          <AdminBadge tone={product.isActive ? "teal" : "neutral"}>
-            {product.isActive ? "In the shop" : "Hidden"}
+          <AdminBadge tone={product.isActive ? "teal" : "coral"}>
+            {product.isActive ? "In the shop" : "Hidden from customers"}
           </AdminBadge>
         }
       />

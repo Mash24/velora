@@ -4,8 +4,7 @@ import { HomeHero } from "@/components/store/HomeHero";
 import { ProductCard } from "@/components/store/ProductCard";
 import { BUSINESS, MAPS_EMBED_URL, MAPS_SEARCH_URL } from "@/lib/constants";
 import { CATEGORY_BLURBS } from "@/lib/category-blurbs";
-import { prisma } from "@/lib/prisma";
-import { categoryWithPublishedProducts, publishedProduct } from "@/lib/shop-query";
+import { getHomeProducts, getNavCategories } from "@/lib/store-data";
 import { parseSource } from "@/lib/source";
 import Link from "next/link";
 
@@ -54,18 +53,7 @@ export default async function HomePage({
 }) {
   const { source } = await searchParams;
   const fromTiktok = parseSource(source) === "TIKTOK" && Boolean(source);
-  const [products, categories] = await Promise.all([
-    prisma.product.findMany({
-      where: publishedProduct,
-      orderBy: [{ featured: "desc" }, { name: "asc" }],
-      take: 8,
-      include: { images: true },
-    }),
-    prisma.category.findMany({
-      where: categoryWithPublishedProducts,
-      orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
-    }),
-  ]);
+  const [products, categories] = await Promise.all([getHomeProducts(), getNavCategories()]);
 
   return (
     <>

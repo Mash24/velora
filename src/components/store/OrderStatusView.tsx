@@ -24,7 +24,7 @@ export function OrderStatusView({ order }: { order: PublicOrderView }) {
     <div className="space-y-6">
       <div className="rounded-2xl border border-navy/10 bg-white p-5">
         <p className="text-xs font-medium uppercase tracking-[0.18em] text-teal">Order {order.orderNumber}</p>
-        <h2 className="mt-2 text-2xl font-semibold">{customerOrderHeadline(order.status)}</h2>
+        <h2 className="mt-2 text-2xl font-semibold">{customerOrderHeadline(order)}</h2>
         <p className="mt-2 text-sm text-navy/70">
           {order.customer.name} · {formatDisplayPhone(order.customer.phone)}
         </p>

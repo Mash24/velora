@@ -11,6 +11,7 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://velora-brown-tau.vercel.app";
+const enableSpeedInsights = process.env.VERCEL === "1";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -47,7 +48,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en-KE" className={`${jakarta.variable} h-full antialiased`}>
       <body className={`${jakarta.className} min-h-full`}>
         {children}
-        <SpeedInsights />
+        {enableSpeedInsights ? <SpeedInsights /> : null}
       </body>
     </html>
   );

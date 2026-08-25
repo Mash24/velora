@@ -1,14 +1,12 @@
 import { ProductCard } from "@/components/store/ProductCard";
 import { ShopFilters } from "@/components/store/ShopFilters";
 import { prisma } from "@/lib/prisma";
+import { priceBandsFrom, shopOrderBy, shopWhere } from "@/lib/shop-query";
 import {
-  activeCategory,
-  activeSubcategory,
-  priceBandsFrom,
-  publishedProduct,
-  shopOrderBy,
-  shopWhere,
-} from "@/lib/shop-query";
+  getPublishedPrices,
+  getShopFilterCategories,
+  productCardSelect,
+} from "@/lib/store-data";
 
 export const metadata = {
   title: "Shop",
@@ -31,25 +29,13 @@ export default async function ShopPage({
   const query = await searchParams;
   const { category, subcategory, q, availability, price, sort } = query;
   const [categories, products, publishedPrices] = await Promise.all([
-    prisma.category.findMany({
-      where: activeCategory,
-      orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
-      include: {
-        subcategories: {
-          where: activeSubcategory,
-          orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
-        },
-      },
-    }),
+    getShopFilterCategories(),
     prisma.product.findMany({
       where: shopWhere(query),
       orderBy: shopOrderBy(sort),
-      include: { category: true, subcategory: true, images: true },
+      select: productCardSelect,
     }),
-    prisma.product.findMany({
-      where: publishedProduct,
-      select: { priceKes: true },
-    }),
+    getPublishedPrices(),
   ]);
   const selectedParent = categories.find((item) => item.slug === category);
   const subcategories = selectedParent?.subcategories ?? [];

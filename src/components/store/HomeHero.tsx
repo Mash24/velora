@@ -10,7 +10,7 @@ export function HomeHero({ fromTiktok }: HomeHeroProps) {
     <section className="relative overflow-hidden bg-navy text-cream">
       <div className="absolute inset-0 lg:left-[36%]">
         <Image
-          src="/images/home-hero.png"
+          src="/images/home-hero.webp"
           alt="Healthcare professional preparing medical supplies in a Nairobi clinic"
           fill
           priority

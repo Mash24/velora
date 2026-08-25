@@ -7,6 +7,7 @@ import { findOrCreateCustomer } from "@/lib/operations";
 import { notifyCustomerByEmail } from "@/lib/order-notifications";
 import { isUsablePhone, normalizeKenyanPhone } from "@/lib/phone";
 import { prisma } from "@/lib/prisma";
+import { publishedProduct } from "@/lib/shop-query";
 import { orderWhatsappMessage, whatsappLink } from "@/lib/whatsapp";
 
 const sources = new Set(Object.values(CustomerSource));
@@ -99,7 +100,9 @@ export async function POST(request: Request) {
 
   const productIds = items.map((item: { productId?: string }) => String(item.productId ?? ""));
   const products = await prisma.product.findMany({
-    where: { id: { in: productIds }, isActive: true },
+    where: {
+      AND: [{ id: { in: productIds } }, publishedProduct],
+    },
   });
   const productMap = new Map(products.map((product) => [product.id, product]));
 
@@ -108,6 +111,10 @@ export async function POST(request: Request) {
       const product = productMap.get(String(item.productId));
       const quantity = Math.min(MAX_ORDER_LINE_QTY, Math.max(1, Number(item.quantity) || 1));
       if (!product) throw new Error("PRODUCT_NOT_FOUND");
+      // Out of stock without "Ask us" should not be orderable from the website.
+      if (!product.askForAvailability && product.stockQuantity <= 0) {
+        throw new Error("PRODUCT_OUT_OF_STOCK");
+      }
       return {
         product,
         quantity,
@@ -209,6 +216,15 @@ export async function POST(request: Request) {
     if (message === "PRODUCT_NOT_FOUND") {
       return NextResponse.json(
         { error: "One of the products is no longer available. Please refresh and try again." },
+        { status: 400 },
+      );
+    }
+    if (message === "PRODUCT_OUT_OF_STOCK") {
+      return NextResponse.json(
+        {
+          error:
+            "One of the products is out of stock. Remove it from your order or check back later.",
+        },
         { status: 400 },
       );
     }

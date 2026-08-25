@@ -2,6 +2,7 @@ import { resolveProductCategory, resolveProductSubcategory } from "@/lib/categor
 import { DomainError, correctStock, receiveStock } from "@/lib/operations";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
+import { revalidateStoreCatalog } from "@/lib/revalidate-store";
 import { NextResponse } from "next/server";
 
 export async function POST(
@@ -88,9 +89,21 @@ export async function POST(
       await prisma.productImage.delete({
         where: { id: String(body.imageId ?? "") },
       });
+      // Publish requires a photo — hide from the shop if the last one was removed.
+      const remaining = await prisma.productImage.count({ where: { productId: id } });
+      const unpublished = remaining === 0;
+      if (unpublished) {
+        await prisma.product.update({
+          where: { id },
+          data: { isActive: false },
+        });
+      }
+      revalidateStoreCatalog();
+      return NextResponse.json({ ok: true, unpublished });
     } else {
       return NextResponse.json({ error: "Unknown action." }, { status: 400 });
     }
+    revalidateStoreCatalog();
     return NextResponse.json({ ok: true });
   } catch (error) {
     const message = error instanceof DomainError ? error.message : "Could not update the product.";

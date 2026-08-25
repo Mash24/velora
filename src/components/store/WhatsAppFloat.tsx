@@ -1,7 +1,18 @@
+"use client";
+
 import { BUSINESS } from "@/lib/constants";
 import { whatsappLink } from "@/lib/whatsapp";
+import { usePathname } from "next/navigation";
+
+/** Hide on checkout so it doesn’t cover Place order / form actions. */
+const HIDDEN_ON = ["/your-order"];
 
 export function WhatsAppFloat() {
+  const pathname = usePathname();
+  if (HIDDEN_ON.some((path) => pathname === path || pathname.startsWith(`${path}/`))) {
+    return null;
+  }
+
   return (
     <a
       href={whatsappLink("Hello Velora, I need help with an order.")}

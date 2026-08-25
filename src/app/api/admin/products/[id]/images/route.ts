@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
+import { revalidateStoreCatalog } from "@/lib/revalidate-store";
 import { uploadProductImage } from "@/lib/storage";
 import { NextResponse } from "next/server";
 
@@ -43,6 +44,7 @@ export async function POST(
         data: { productId: id, url, alt: product.name },
       });
     }
+    revalidateStoreCatalog();
     return NextResponse.json({ ok: true, count: files.length });
   } catch {
     return NextResponse.json(

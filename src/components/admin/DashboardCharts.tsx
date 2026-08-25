@@ -84,7 +84,7 @@ export function RequestChart({ buckets }: { buckets: { label: string; value: num
   const dense = buckets.length > 14;
 
   return (
-    <div className="relative pt-2">
+    <div className="relative min-w-0 overflow-x-auto pt-2">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-2 flex h-40 flex-col justify-between"
@@ -94,7 +94,7 @@ export function RequestChart({ buckets }: { buckets: { label: string; value: num
         ))}
       </div>
 
-      <div className="relative flex h-28 items-end gap-0.5 sm:h-44 sm:gap-1.5">
+      <div className="relative flex h-28 min-w-[16rem] items-end gap-0.5 sm:h-44 sm:gap-1.5">
         {buckets.map((bucket) => {
           const height = max ? Math.max(6, (bucket.value / max) * (dense ? 88 : 128)) : 6;
           const hasValue = bucket.value > 0;
@@ -147,10 +147,12 @@ export function DashboardMiniStat({
   return (
     <Link
       href={href}
-      className={`block rounded-xl border bg-white px-2 py-3 text-center transition hover:bg-sand/30 sm:px-3 sm:py-4 ${accents[tone]}`}
+      className={`block min-w-0 rounded-xl border bg-white px-2 py-3 text-center transition hover:bg-sand/30 sm:px-3 sm:py-4 ${accents[tone]}`}
     >
       <p className="text-xl font-semibold tabular-nums tracking-tight text-navy sm:text-2xl">{value}</p>
-      <p className="mt-1 text-[10px] leading-snug font-medium text-navy/65 sm:text-xs">{label}</p>
+      <p className="mt-1 break-anywhere text-[10px] leading-snug font-medium text-navy/65 sm:text-xs">
+        {label}
+      </p>
     </Link>
   );
 }

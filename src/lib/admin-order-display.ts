@@ -1,5 +1,7 @@
 import { formatKes } from "./format";
 
+import { BUSINESS } from "./constants";
+
 type OrderItem = { name: string; quantity: number };
 
 type OrderListRow = {
@@ -9,6 +11,10 @@ type OrderListRow = {
   totalKes: number;
   delivery?: { address: string; status: string; zone: string } | null;
 };
+
+export function shopPickupAddress() {
+  return `Shop pickup · ${BUSINESS.location} · ${BUSINESS.landmark}`;
+}
 
 export function isShopPickup(address?: string | null) {
   return address?.startsWith("Shop pickup") ?? false;

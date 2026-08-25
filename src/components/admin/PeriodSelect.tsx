@@ -50,7 +50,7 @@ export function PeriodSelect({
       </select>
 
       {period === "custom" ? (
-        <form className="mt-1 grid gap-3 sm:grid-cols-[1fr_1fr_auto]" action="/admin">
+        <form className="mt-1 grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]" action="/admin">
           {metric ? <input type="hidden" name="metric" value={metric} /> : null}
           <input type="hidden" name="period" value="custom" />
           <label className={adminLabelClass}>

@@ -3,13 +3,14 @@
 import { formatKes } from "@/lib/format";
 import { mergeOrderNotes, splitOrderNotes } from "@/lib/order-notes";
 import {
+  AdminNotice,
   adminButtonClass,
   adminInputClass,
   adminSelectClass,
   adminTextareaClass,
 } from "@/components/admin/ui";
 import { useRouter } from "next/navigation";
-import { FormEvent, MouseEvent, useMemo, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 
 type Line = {
   id: string;
@@ -23,6 +24,7 @@ type Product = { id: string; name: string; stockQuantity: number; priceKes: numb
 
 export function EnquiryEditor({
   orderId,
+  customerPhone,
   items,
   notes,
   paymentMethod,
@@ -31,6 +33,7 @@ export function EnquiryEditor({
   pickup,
 }: {
   orderId: string;
+  customerPhone: string;
   items: Line[];
   notes: string;
   paymentMethod: string;
@@ -52,6 +55,7 @@ export function EnquiryEditor({
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const productTotal = lines.reduce(
     (sum, line) => sum + line.unitPriceKes * Math.max(0, line.quantity),
@@ -87,17 +91,13 @@ export function EnquiryEditor({
       setError(saved.data.error ?? "Could not save the order.");
       return false;
     }
-    setMessage("Saved.");
+    setMessage("Saved for later.");
     setBusy(false);
     router.refresh();
     return true;
   }
 
-  async function confirm(event: MouseEvent<HTMLButtonElement>) {
-    event.preventDefault();
-    const formEl = event.currentTarget.form;
-    if (!formEl) return;
-    if (!window.confirm("Confirm this sale? Stock will be taken off the shelf now.")) return;
+  async function confirmSale(formEl: HTMLFormElement) {
     setBusy(true);
     setError("");
     setMessage("");
@@ -105,11 +105,13 @@ export function EnquiryEditor({
     const saved = await post("update-enquiry", form);
     if (!saved.ok) {
       setBusy(false);
+      setConfirmOpen(false);
       setError(saved.data.error ?? "Could not save the order.");
       return;
     }
     const confirmed = await post("confirm", form);
     setBusy(false);
+    setConfirmOpen(false);
     if (!confirmed.ok) {
       setError(confirmed.data.error ?? "Could not confirm the order.");
       return;
@@ -122,15 +124,40 @@ export function EnquiryEditor({
       onSubmit={save}
       className="mt-4 space-y-5 rounded-2xl border border-navy/8 bg-white p-5 shadow-[0_1px_2px_rgba(22,52,76,0.04),0_8px_24px_rgba(22,52,76,0.04)]"
     >
-      <div>
-        <h2 className="font-medium">Confirm this order</h2>
-        <p className="mt-1 text-sm text-navy/70">
-          Adjust quantities if needed, quote delivery, then confirm. Stock is taken when you confirm.
-        </p>
+      <div className="rounded-xl border border-teal/25 bg-teal/5 px-4 py-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-teal">Do this next</p>
+        <ol className="mt-3 space-y-3 text-sm text-navy/85">
+          <li className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <span>
+              <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-navy text-xs font-semibold text-cream">
+                1
+              </span>
+              Call the customer to confirm what they need
+            </span>
+            <a href={`tel:${customerPhone}`} className={`${adminButtonClass("secondary")} shrink-0`}>
+              Call customer
+            </a>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-navy text-xs font-semibold text-cream">
+              2
+            </span>
+            <span>
+              Check the products below
+              {!pickup ? " and set the delivery fee" : ""}
+            </span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-navy text-xs font-semibold text-cream">
+              3
+            </span>
+            <span>Press Confirm sale — stock comes off the shelf then</span>
+          </li>
+        </ol>
       </div>
 
       <div className="space-y-3">
-        <p className="text-xs font-medium uppercase tracking-[0.14em] text-navy/50">Products requested</p>
+        <p className="text-sm font-semibold text-navy">Products</p>
         {lines.map((line, index) => (
           <div key={`${line.productId}-${index}`} className="flex flex-col gap-2 sm:flex-row sm:items-end">
             <select
@@ -154,7 +181,7 @@ export function EnquiryEditor({
                 </option>
               ))}
             </select>
-            <label className="text-sm">
+            <label className="text-sm font-medium text-navy/80">
               Qty
               <input
                 type="number"
@@ -188,9 +215,9 @@ export function EnquiryEditor({
               },
             ]);
           }}
-          className="text-sm text-teal"
+          className={adminButtonClass("secondary")}
         >
-          Add a product
+          Add another product
         </button>
       </div>
 
@@ -201,7 +228,7 @@ export function EnquiryEditor({
         </div>
         {!pickup ? (
           <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-            <dt className="text-navy/70">Delivery fee</dt>
+            <dt className="font-medium text-navy/80">Delivery fee (KSh)</dt>
             <dd>
               <input
                 name="deliveryFeeKes"
@@ -214,19 +241,15 @@ export function EnquiryEditor({
             </dd>
           </div>
         ) : null}
-        <div className="flex justify-between gap-4 border-t border-navy/10 pt-2 font-medium">
-          <dt>Total</dt>
+        <div className="flex justify-between gap-4 border-t border-navy/10 pt-2 text-base font-semibold">
+          <dt>Total to charge</dt>
           <dd className="tabular-nums">{formatKes(total)}</dd>
         </div>
       </dl>
 
-      <label className="block text-sm">
+      <label className="block text-sm font-medium text-navy/80">
         How they&apos;ll pay
-        <select
-          name="paymentMethod"
-          defaultValue={paymentMethod}
-          className={adminSelectClass}
-        >
+        <select name="paymentMethod" defaultValue={paymentMethod} className={`${adminSelectClass} mt-1.5`}>
           <option value="PAY_ON_DELIVERY">Pay on delivery</option>
           <option value="MPESA">M-Pesa first</option>
           <option value="CASH">Cash</option>
@@ -234,32 +257,63 @@ export function EnquiryEditor({
         </select>
       </label>
 
-      <label className="block text-sm">
-        Your notes <span className="text-navy/50">(optional)</span>
+      <label className="block text-sm font-medium text-navy/80">
+        Your notes <span className="font-normal text-navy/50">(optional)</span>
         <textarea
           name="staffNote"
           rows={2}
           placeholder="Anything for your team — not shown to the customer"
-          className={adminTextareaClass}
+          className={`${adminTextareaClass} mt-1.5`}
         />
       </label>
 
-      {error ? <p className="text-sm text-coral">{error}</p> : null}
-      {message ? <p className="text-sm text-teal">{message}</p> : null}
+      {error ? <AdminNotice tone="warn">{error}</AdminNotice> : null}
+      {message ? <AdminNotice tone="success">{message}</AdminNotice> : null}
 
-      <div className="flex flex-col gap-2 sm:flex-row">
-        <button disabled={busy} className={adminButtonClass("secondary")}>
-          Save changes
-        </button>
-        <button
-          type="button"
-          disabled={busy}
-          onClick={confirm}
-          className={adminButtonClass("primary")}
-        >
-          Confirm sale
-        </button>
-      </div>
+      {confirmOpen ? (
+        <div className="space-y-3 rounded-xl border border-navy/15 bg-sand/40 p-4">
+          <p className="font-semibold text-navy">Confirm this sale?</p>
+          <p className="text-sm text-navy/75">
+            Total <strong>{formatKes(total)}</strong>. Stock for these products will be taken off the
+            shelf now.
+          </p>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <button
+              type="button"
+              disabled={busy}
+              onClick={(event) => {
+                const formEl = event.currentTarget.form;
+                if (formEl) void confirmSale(formEl);
+              }}
+              className={`${adminButtonClass("primary")} w-full sm:flex-1`}
+            >
+              {busy ? "Confirming…" : "Yes, confirm sale"}
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => setConfirmOpen(false)}
+              className={`${adminButtonClass("secondary")} w-full sm:w-auto`}
+            >
+              Not yet
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-2">
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => setConfirmOpen(true)}
+            className={`${adminButtonClass("primary")} w-full min-h-12 text-base font-semibold`}
+          >
+            Confirm sale
+          </button>
+          <button type="submit" disabled={busy} className={`${adminButtonClass("secondary")} w-full`}>
+            Save for later
+          </button>
+        </div>
+      )}
     </form>
   );
 }

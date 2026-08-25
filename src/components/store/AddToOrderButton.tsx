@@ -28,13 +28,23 @@ export function AddToOrderButton({
 }: Props) {
   const [added, setAdded] = useState(false);
   const [quantity, setQuantity] = useState(1);
+  const canAdd = inStock || askUs;
 
   function add(qty = quantity) {
+    if (!canAdd) return;
     addToOrder({ productId, name, unit, priceKes, imageUrl }, qty);
     setAdded(true);
   }
 
   if (compact) {
+    if (!canAdd) {
+      return (
+        <p className="min-h-9 w-full rounded-lg bg-navy/5 px-2 text-center text-[11px] font-medium leading-9 text-navy/55 sm:min-h-11 sm:rounded-xl sm:text-xs sm:leading-[2.75rem]">
+          Out of stock
+        </p>
+      );
+    }
+
     return (
       <button
         type="button"
@@ -55,10 +65,25 @@ export function AddToOrderButton({
     );
   }
 
+  if (!canAdd) {
+    return (
+      <div className="space-y-2">
+        <p className="text-sm text-navy/70">This item is currently out of stock.</p>
+        <p className="text-sm text-navy/55">
+          Check back soon, or{" "}
+          <Link href="/contact" className="font-medium text-teal hover:underline">
+            ask us
+          </Link>{" "}
+          if you need it urgently.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-3">
-      {!inStock && !askUs ? (
-        <p className="text-sm text-navy/70">This item is currently out of stock.</p>
+      {askUs && !inStock ? (
+        <p className="text-sm text-navy/70">Availability can change — send a request and we&apos;ll confirm.</p>
       ) : null}
       <div className="flex items-center gap-3">
         <span className="text-sm">Quantity</span>

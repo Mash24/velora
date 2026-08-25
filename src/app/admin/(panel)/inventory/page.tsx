@@ -1,50 +1,85 @@
 import { AdminInventoryMobileList } from "@/components/admin/AdminMobileLists";
+import { InventoryReceiveButton } from "@/components/admin/InventoryReceiveButton";
 import {
   AdminBadge,
   AdminCard,
   AdminEmpty,
   AdminFilterPill,
+  AdminFilterRow,
+  AdminNotice,
   AdminPageHeader,
-  AdminSectionTitle,
-  AdminStatCard,
   AdminTable,
   AdminTableHead,
   adminButtonClass,
   adminInputClass,
 } from "@/components/admin/ui";
 import { isLowStock } from "@/lib/admin-filters";
-import { formatAdminDateTime } from "@/lib/admin-period";
+import { formatAdminRelativeTime } from "@/lib/admin-period";
 import { inventoryMovementLabel } from "@/lib/labels";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 
+function href(next: Record<string, string | undefined>) {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(next)) {
+    if (value) params.set(key, value);
+  }
+  const query = params.toString();
+  return query ? `/admin/inventory?${query}` : "/admin/inventory";
+}
+
+function statusOf(product: { stockQuantity: number; reorderThreshold: number }) {
+  if (product.stockQuantity <= 0) return { key: "out" as const, label: "Out of stock", tone: "coral" as const };
+  if (isLowStock(product)) return { key: "low" as const, label: "Low stock", tone: "sand" as const };
+  return { key: "ok" as const, label: "OK", tone: "teal" as const };
+}
+
+function urgencyRank(status: "out" | "low" | "ok") {
+  if (status === "out") return 0;
+  if (status === "low") return 1;
+  return 2;
+}
+
 export default async function AdminInventoryPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; stock?: string; category?: string }>;
+  searchParams: Promise<{ q?: string; stock?: string }>;
 }) {
-  const { q, stock, category } = await searchParams;
+  const { q, stock } = await searchParams;
+  const query = q?.trim() ?? "";
+
   const products = await prisma.product.findMany({
-    where: {
-      ...(q?.trim()
-        ? { name: { contains: q.trim(), mode: "insensitive" } }
-        : {}),
-      ...(category ? { category: { slug: category } } : {}),
-    },
+    where: query
+      ? {
+          OR: [
+            { name: { contains: query, mode: "insensitive" } },
+            { sku: { contains: query, mode: "insensitive" } },
+            { category: { name: { contains: query, mode: "insensitive" } } },
+          ],
+        }
+      : undefined,
     include: {
       category: true,
       movements: { orderBy: { createdAt: "desc" }, take: 1 },
     },
     orderBy: { name: "asc" },
   });
+
   const low = products.filter(isLowStock);
   const out = products.filter((product) => product.stockQuantity <= 0);
-  const visible =
+  const filtered =
     stock === "low" ? low : stock === "out" ? out : products;
 
+  const visible = [...filtered].sort((a, b) => {
+    const rank = urgencyRank(statusOf(a).key) - urgencyRank(statusOf(b).key);
+    if (rank !== 0) return rank;
+    return a.name.localeCompare(b.name);
+  });
+
+  const attentionCount = out.length + low.filter((p) => p.stockQuantity > 0).length;
+
   const mobileItems = visible.map((product) => {
-    const status =
-      product.stockQuantity <= 0 ? "Out" : isLowStock(product) ? "Low" : "OK";
+    const status = statusOf(product);
     const last = product.movements[0];
     return {
       id: product.id,
@@ -53,19 +88,16 @@ export default async function AdminInventoryPage({
       stockQuantity: product.stockQuantity,
       stockUnit: product.stockUnit,
       reorderThreshold: product.reorderThreshold,
-      status,
-      statusTone: (status === "Out" ? "coral" : status === "Low" ? "sand" : "teal") as
-        | "teal"
-        | "sand"
-        | "coral",
+      status: status.key === "out" ? "Out" : status.key === "low" ? "Low" : "OK",
+      statusTone: status.tone,
       lastMovement: last ? (
         <>
           {inventoryMovementLabel(last.type)}
           {last.reason ? ` · ${last.reason}` : null}
-          <span className="block">{formatAdminDateTime(last.createdAt)}</span>
+          <span className="block text-navy/45">{formatAdminRelativeTime(last.createdAt)}</span>
         </>
       ) : (
-        "—"
+        "No movements yet"
       ),
     };
   });
@@ -73,64 +105,77 @@ export default async function AdminInventoryPage({
   return (
     <div className="min-w-0">
       <AdminPageHeader
-        title="Inventory"
-        description="The number on the shelf. Receive or correct stock from the product — never type over it silently."
+        title="Stock"
+        description="What’s on the shelf. Receive stock here — corrections stay on the product page."
       />
 
-      <section className="mb-8">
-        <AdminSectionTitle>Overview</AdminSectionTitle>
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          <AdminStatCard
-            label="Products"
-            value={products.length}
-            hint="All items in the catalogue"
-            href="/admin/inventory"
-          />
-          <AdminStatCard
-            label="Low stock"
-            value={low.length}
-            hint={low.length ? "At or below reorder threshold" : "All levels healthy"}
-            href="/admin/inventory?stock=low"
-            warn={low.length > 0}
-          />
-          <AdminStatCard
-            label="Out of stock"
-            value={out.length}
-            hint={out.length ? "Needs restocking" : "Nothing empty right now"}
-            href="/admin/inventory?stock=out"
-            warn={out.length > 0}
-          />
-        </div>
-      </section>
+      {attentionCount > 0 && stock !== "low" && stock !== "out" && !query ? (
+        <AdminNotice tone="warn" className="mb-6">
+          <Link
+            href={out.length > 0 ? "/admin/inventory?stock=out" : "/admin/inventory?stock=low"}
+            className="flex items-center justify-between gap-3 font-medium text-navy"
+          >
+            <span>
+              {out.length > 0
+                ? `${out.length} out of stock${low.filter((p) => p.stockQuantity > 0).length ? ` · ${low.filter((p) => p.stockQuantity > 0).length} low` : ""}`
+                : `${low.length} low on stock`}
+            </span>
+            <span className="shrink-0 text-teal">Review →</span>
+          </Link>
+        </AdminNotice>
+      ) : null}
 
-      <div className="mb-4 flex flex-wrap gap-2">
-        <AdminFilterPill href="/admin/inventory" active={!stock}>
-          All
+      <AdminFilterRow>
+        <AdminFilterPill href={href({ q: query || undefined })} active={!stock}>
+          All ({products.length})
         </AdminFilterPill>
-        <AdminFilterPill href="/admin/inventory?stock=low" active={stock === "low"}>
-          Low stock
+        <AdminFilterPill href={href({ stock: "low", q: query || undefined })} active={stock === "low"}>
+          Low ({low.length})
         </AdminFilterPill>
-        <AdminFilterPill href="/admin/inventory?stock=out" active={stock === "out"}>
-          Out of stock
+        <AdminFilterPill href={href({ stock: "out", q: query || undefined })} active={stock === "out"}>
+          Out ({out.length})
         </AdminFilterPill>
-      </div>
+      </AdminFilterRow>
 
-      <form className="mb-6 flex min-w-0 flex-col gap-3 sm:flex-row" action="/admin/inventory">
-        {stock ? <input type="hidden" name="stock" value={stock} /> : null}
-        <input
-          name="q"
-          defaultValue={q}
-          placeholder="Search products…"
-          className={`${adminInputClass} min-w-0 flex-1`}
-        />
-        <button type="submit" className={`${adminButtonClass("primary")} sm:shrink-0`}>
-          Search
-        </button>
-      </form>
+      <AdminCard className="mb-6" padding="p-4 sm:p-5">
+        <form className="flex flex-col gap-3 sm:flex-row" action="/admin/inventory">
+          {stock ? <input type="hidden" name="stock" value={stock} /> : null}
+          <label className="sr-only" htmlFor="stock-search">
+            Search stock
+          </label>
+          <input
+            id="stock-search"
+            name="q"
+            defaultValue={query}
+            placeholder="Search name, SKU or category"
+            className={`${adminInputClass} min-w-0 sm:flex-1`}
+          />
+          <button type="submit" className={adminButtonClass("primary")}>
+            Search
+          </button>
+        </form>
+      </AdminCard>
 
       <AdminCard padding="p-0">
         {visible.length === 0 ? (
-          <AdminEmpty>No products match that view.</AdminEmpty>
+          <AdminEmpty>
+            {products.length === 0 && !query ? (
+              <>
+                No products yet.{" "}
+                <Link href="/admin/products/new" className="font-semibold text-teal">
+                  Add a product
+                </Link>
+              </>
+            ) : query ? (
+              <>No products match “{query}”.</>
+            ) : stock === "out" ? (
+              <>Nothing is out of stock.</>
+            ) : stock === "low" ? (
+              <>Nothing is low on stock.</>
+            ) : (
+              <>No products match that view.</>
+            )}
+          </AdminEmpty>
         ) : (
           <>
             <AdminInventoryMobileList items={mobileItems} />
@@ -139,51 +184,80 @@ export default async function AdminInventoryPage({
                 <AdminTableHead>
                   <tr>
                     <th className="px-4 py-3">Product</th>
-                    <th className="px-4 py-3">Category</th>
                     <th className="px-4 py-3">On shelf</th>
-                    <th className="px-4 py-3">Alert at</th>
+                    <th className="px-4 py-3">Alert</th>
                     <th className="px-4 py-3">Status</th>
-                    <th className="px-4 py-3">Last movement</th>
+                    <th className="px-4 py-3">Last change</th>
+                    <th className="px-4 py-3">
+                      <span className="sr-only">Actions</span>
+                    </th>
                   </tr>
                 </AdminTableHead>
                 <tbody>
                   {visible.map((product) => {
-                    const status =
-                      product.stockQuantity <= 0 ? "Out" : isLowStock(product) ? "Low" : "OK";
+                    const status = statusOf(product);
                     const last = product.movements[0];
                     return (
-                      <tr key={product.id} className="border-t border-navy/6 transition hover:bg-sand/20">
+                      <tr
+                        key={product.id}
+                        className={`border-t border-navy/6 transition hover:bg-sand/25 ${
+                          status.key === "out"
+                            ? "bg-coral/[0.04]"
+                            : status.key === "low"
+                              ? "bg-sand/35"
+                              : ""
+                        }`}
+                      >
                         <td className="px-4 py-3.5">
-                          <Link href={`/admin/products/${product.id}`} className="break-anywhere font-semibold text-teal">
+                          <Link
+                            href={`/admin/products/${product.id}`}
+                            className="break-anywhere font-semibold text-teal hover:underline"
+                          >
                             {product.name}
                           </Link>
-                        </td>
-                        <td className="px-4 py-3.5 text-navy/70">{product.category.name}</td>
-                        <td className="px-4 py-3.5 tabular-nums">
-                          {product.stockQuantity} {product.stockUnit}
-                        </td>
-                        <td className="px-4 py-3.5 tabular-nums text-navy/70">
-                          {product.reorderThreshold}
+                          <p className="text-xs text-navy/50">{product.category.name}</p>
                         </td>
                         <td className="px-4 py-3.5">
-                          <AdminBadge
-                            tone={status === "Out" ? "coral" : status === "Low" ? "sand" : "teal"}
-                          >
-                            {status === "Out" ? "Out of stock" : status}
-                          </AdminBadge>
+                          <span className="text-base font-semibold tabular-nums text-navy">
+                            {product.stockQuantity}
+                          </span>
+                          <span className="ml-1 text-sm text-navy/55">{product.stockUnit}</span>
                         </td>
-                        <td className="px-4 py-3.5 text-navy/70">
+                        <td className="px-4 py-3.5 tabular-nums text-sm text-navy/60">
+                          ≤ {product.reorderThreshold}
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <AdminBadge tone={status.tone}>{status.label}</AdminBadge>
+                        </td>
+                        <td className="px-4 py-3.5 text-sm text-navy/70">
                           {last ? (
                             <>
-                              {inventoryMovementLabel(last.type)}
-                              {last.reason ? ` · ${last.reason}` : null}
-                              <span className="block text-xs text-navy/45">
-                                {formatAdminDateTime(last.createdAt)}
+                              <span>
+                                {inventoryMovementLabel(last.type)}
+                                {last.reason ? ` · ${last.reason}` : ""}
+                              </span>
+                              <span className="mt-0.5 block text-xs text-navy/45">
+                                {formatAdminRelativeTime(last.createdAt)}
                               </span>
                             </>
                           ) : (
-                            "—"
+                            <span className="text-navy/40">—</span>
                           )}
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <div className="flex flex-col items-end gap-2">
+                            <InventoryReceiveButton
+                              productId={product.id}
+                              stockUnit={product.stockUnit}
+                              compact
+                            />
+                            <Link
+                              href={`/admin/products/${product.id}`}
+                              className="text-sm font-medium text-navy/45 hover:text-navy"
+                            >
+                              Open →
+                            </Link>
+                          </div>
                         </td>
                       </tr>
                     );

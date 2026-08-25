@@ -1,6 +1,7 @@
 "use client";
 
 import { adminInputClass, adminLabelClass, adminSelectClass } from "@/components/admin/ui";
+import { useState } from "react";
 
 type Category = {
   id: string;
@@ -22,10 +23,12 @@ export function CategoryFields({
   onCategoryChange: (id: string) => void;
   onSubcategoryChange: (id: string) => void;
 }) {
+  const [showNewCategory, setShowNewCategory] = useState(categories.length === 0);
+  const [showNewSubcategory, setShowNewSubcategory] = useState(false);
   const children = categories.find((item) => item.id === categoryId)?.subcategories ?? [];
 
   return (
-    <>
+    <div className="space-y-4">
       <label className={adminLabelClass}>
         Category
         <select
@@ -33,12 +36,11 @@ export function CategoryFields({
           onChange={(event) => {
             onCategoryChange(event.target.value);
             onSubcategoryChange("");
+            setShowNewSubcategory(false);
           }}
           className={`${adminSelectClass} mt-1.5`}
         >
-          {categories.length === 0 ? (
-            <option value="">No categories yet — type one below</option>
-          ) : null}
+          {categories.length === 0 ? <option value="">Choose or add a category</option> : null}
           {categories.map((category) => (
             <option key={category.id} value={category.id}>
               {category.name}
@@ -47,16 +49,28 @@ export function CategoryFields({
           ))}
         </select>
       </label>
+
+      {showNewCategory ? (
+        <label className={adminLabelClass}>
+          New category name
+          <input
+            name="categoryName"
+            placeholder="e.g. Wound Care & Dressings"
+            className={`${adminInputClass} mt-1.5`}
+          />
+        </label>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setShowNewCategory(true)}
+          className="text-sm font-semibold text-teal"
+        >
+          + Add a new category
+        </button>
+      )}
+
       <label className={adminLabelClass}>
-        Or type a new category
-        <input
-          name="categoryName"
-          placeholder="e.g. Wound Care & Dressings"
-          className={`${adminInputClass} mt-1.5`}
-        />
-      </label>
-      <label className={adminLabelClass}>
-        Subcategory
+        Subcategory <span className="font-normal text-navy/50">(optional)</span>
         <select
           name="subcategoryId"
           value={subcategoryId}
@@ -72,14 +86,25 @@ export function CategoryFields({
           ))}
         </select>
       </label>
-      <label className={adminLabelClass}>
-        Or type a new subcategory
-        <input
-          name="subcategoryName"
-          placeholder="e.g. Examination Gloves"
-          className={`${adminInputClass} mt-1.5`}
-        />
-      </label>
-    </>
+
+      {showNewSubcategory ? (
+        <label className={adminLabelClass}>
+          New subcategory name
+          <input
+            name="subcategoryName"
+            placeholder="e.g. Examination Gloves"
+            className={`${adminInputClass} mt-1.5`}
+          />
+        </label>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setShowNewSubcategory(true)}
+          className="text-sm font-semibold text-teal"
+        >
+          + Add a new subcategory
+        </button>
+      )}
+    </div>
   );
 }

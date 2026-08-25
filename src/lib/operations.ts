@@ -219,12 +219,18 @@ export async function recordSale(input: {
   paymentStatus: PaymentStatus;
   mpesaCode?: string;
   notes?: string;
+  deliveryFeeKes?: number;
+  /** Walk-in already paid and left with goods — mark collected and close. */
+  completeNow?: boolean;
   items: { productId: string; quantity: number }[];
 }) {
   if (input.items.length === 0) throw new DomainError("Add at least one product.");
   if (!input.name.trim() || !input.phone.trim() || !input.address.trim()) {
     throw new DomainError("Please enter the customer name, phone and location.");
   }
+
+  const deliveryFeeKes = Math.max(0, Math.floor(input.deliveryFeeKes ?? 0));
+  const completeNow = Boolean(input.completeNow);
 
   return prisma.$transaction(async (tx) => {
     const customer = await findOrCreateCustomer(
@@ -237,16 +243,27 @@ export async function recordSale(input: {
       tx,
     );
 
+    const productIds = [...new Set(input.items.map((item) => item.productId))];
     const products = await tx.product.findMany({
-      where: { id: { in: input.items.map((item) => item.productId) } },
+      where: { id: { in: productIds } },
     });
     const productMap = new Map(products.map((product) => [product.id, product]));
 
-    const lines = input.items.map((item) => {
-      const product = productMap.get(item.productId);
-      const quantity = Math.max(1, item.quantity);
+    // Merge duplicate product lines
+    const qtyByProduct = new Map<string, number>();
+    for (const item of input.items) {
+      const quantity = Math.max(1, Math.floor(item.quantity) || 1);
+      qtyByProduct.set(item.productId, (qtyByProduct.get(item.productId) ?? 0) + quantity);
+    }
+
+    const lines = [...qtyByProduct.entries()].map(([productId, quantity]) => {
+      const product = productMap.get(productId);
       if (!product) throw new DomainError("A product on this sale is missing.");
-      if (!product.isActive) throw new DomainError(`${product.name} is hidden from sale.`);
+      if (quantity > product.stockQuantity) {
+        throw new DomainError(
+          `Not enough stock for ${product.name}. Only ${product.stockQuantity} left.`,
+        );
+      }
       return {
         product,
         quantity,
@@ -256,19 +273,23 @@ export async function recordSale(input: {
     });
 
     const subtotalKes = lines.reduce((sum, line) => sum + line.lineTotalKes, 0);
+    const totalKes = subtotalKes + deliveryFeeKes;
     const orderNumber = `VEL-${Date.now().toString(36).toUpperCase()}`;
+    const now = new Date();
+    const paid = input.paymentStatus === PaymentStatus.PAID;
 
     const order = await tx.order.create({
       data: {
         orderNumber,
         customerId: customer.id,
         source: input.source,
-        status: OrderStatus.CONFIRMED,
+        status: completeNow ? OrderStatus.COMPLETED : OrderStatus.CONFIRMED,
         fromWebsiteRequest: false,
-        confirmedAt: new Date(),
+        confirmedAt: now,
+        completedAt: completeNow ? now : null,
         subtotalKes,
-        deliveryFeeKes: 0,
-        totalKes: subtotalKes,
+        deliveryFeeKes,
+        totalKes,
         notes: input.notes || null,
         items: {
           create: lines.map((line) => ({
@@ -283,16 +304,18 @@ export async function recordSale(input: {
           create: {
             method: input.paymentMethod,
             status: input.paymentStatus,
-            amountKes: subtotalKes,
+            amountKes: totalKes,
             mpesaCode: input.mpesaCode || null,
+            paidAt: paid ? now : null,
           },
         },
         delivery: {
           create: {
             zone: input.zone,
             address: input.address,
-            feeKes: 0,
-            status: DeliveryStatus.PENDING,
+            feeKes: deliveryFeeKes,
+            status: completeNow ? DeliveryStatus.DELIVERED : DeliveryStatus.PENDING,
+            deliveredAt: completeNow ? now : null,
           },
         },
       },
@@ -309,17 +332,17 @@ export async function recordSale(input: {
     }
 
     await logOrderEvent(tx, order.id, "Walk-in or phone sale recorded — stock taken off the shelf.");
-    if (input.paymentStatus === PaymentStatus.PAID) {
-      await tx.payment.update({
-        where: { orderId: order.id },
-        data: { paidAt: new Date() },
-      });
+    if (paid) {
       await logOrderEvent(tx, order.id, "Payment recorded at time of sale.");
+    }
+    if (completeNow) {
+      await logOrderEvent(tx, order.id, "Collected and closed at the counter.");
     }
 
     return order;
   }).then((order) => {
     void notifyCustomerByEmail(order.id, "confirmed");
+    if (completeNow) void notifyCustomerByEmail(order.id, "completed");
     return order;
   });
 }
@@ -566,7 +589,7 @@ export async function markOrderStatus(orderId: string, status: OrderStatus) {
     }
     if (status === OrderStatus.COMPLETED) {
       data.completedAt = now;
-      await logOrderEvent(tx, orderId, "Marked completed.");
+      await logOrderEvent(tx, orderId, "Order closed.");
     }
 
     return tx.order.update({ where: { id: orderId }, data });

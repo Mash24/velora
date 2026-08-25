@@ -3,7 +3,7 @@ import { ProductImageGallery } from "@/components/store/ProductImageGallery";
 import { categoryPath } from "@/lib/category-path";
 import { formatKes } from "@/lib/format";
 import { availabilityTone, publicAvailability } from "@/lib/labels";
-import { prisma } from "@/lib/prisma";
+import { getPublishedProductBySlug } from "@/lib/store-data";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -13,10 +13,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const product = await prisma.product.findUnique({
-    where: { slug },
-    include: { category: true, subcategory: true },
-  });
+  const product = await getPublishedProductBySlug(slug);
   if (!product || !product.isActive || !product.category.isActive) return { title: "Product" };
   if (product.subcategory && !product.subcategory.isActive) return { title: "Product" };
   const description =
@@ -36,14 +33,7 @@ export default async function ProductPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const product = await prisma.product.findUnique({
-    where: { slug },
-    include: {
-      category: true,
-      subcategory: true,
-      images: { orderBy: { id: "asc" } },
-    },
-  });
+  const product = await getPublishedProductBySlug(slug);
 
   if (!product || !product.isActive || !product.category.isActive) notFound();
   if (product.subcategory && !product.subcategory.isActive) notFound();
@@ -60,10 +50,11 @@ export default async function ProductPage({
       "@type": "Offer",
       priceCurrency: "KES",
       price: product.priceKes,
-      availability:
-        product.askForAvailability || product.stockQuantity <= 0
-          ? "https://schema.org/OutOfStock"
-          : "https://schema.org/InStock",
+      availability: product.askForAvailability
+        ? "https://schema.org/LimitedAvailability"
+        : product.stockQuantity > 0
+          ? "https://schema.org/InStock"
+          : "https://schema.org/OutOfStock",
     },
   };
 

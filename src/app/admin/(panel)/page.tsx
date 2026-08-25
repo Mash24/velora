@@ -58,8 +58,10 @@ export default async function AdminDashboardPage({
   const metric = parseDashboardMetric(query.metric);
   const metricMeta = DASHBOARD_METRICS.find((item) => item.value === metric) ?? DASHBOARD_METRICS[0];
   const now = nairobiNow();
-  const admin = await getCurrentAdmin();
-  const data = await loadDashboard(range, metric);
+  const [admin, data] = await Promise.all([
+    getCurrentAdmin(),
+    loadDashboard(range, metric),
+  ]);
 
   return (
     <div className="min-w-0">
@@ -70,17 +72,9 @@ export default async function AdminDashboardPage({
         newOrders={data.attention.newOrders}
       />
 
-      <DashboardFilters
-        metric={metric}
-        period={range.period}
-        from={query.from}
-        to={query.to}
-        periodLabel={range.label}
-      />
-
       <section className="mb-8">
-        <AdminSectionTitle description="Jump straight to what needs action today.">
-          What needs your attention
+        <AdminSectionTitle description="Tap a card to jump straight to the work.">
+          What needs doing
         </AdminSectionTitle>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <AdminStatCard
@@ -120,17 +114,25 @@ export default async function AdminDashboardPage({
         </div>
       </section>
 
-      <div className="mb-6 grid gap-6 xl:grid-cols-5">
+      <DashboardFilters
+        metric={metric}
+        period={range.period}
+        from={query.from}
+        to={query.to}
+        periodLabel={range.label}
+      />
+
+      <div className="mb-6 grid min-w-0 gap-6 xl:grid-cols-5">
         <AdminCard
           title={metricMeta.label}
           description={metricMeta.hint}
           className="xl:col-span-3"
         >
-          <div className="mb-4 flex items-baseline justify-between gap-3 border-b border-navy/6 pb-4">
-            <p className="text-3xl font-semibold tabular-nums tracking-tight text-navy">
+          <div className="mb-4 flex min-w-0 flex-col gap-1 border-b border-navy/6 pb-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-3">
+            <p className="break-anywhere text-[clamp(1.5rem,5vw,1.875rem)] font-semibold tabular-nums tracking-tight text-navy">
               {data.chart.total.toLocaleString("en-KE")}
             </p>
-            <p className="text-sm text-navy/70">{range.label}</p>
+            <p className="shrink-0 text-sm text-navy/70">{range.label}</p>
           </div>
           {data.chart.total === 0 ? (
             <AdminEmpty>Nothing in this period yet.</AdminEmpty>
@@ -141,7 +143,7 @@ export default async function AdminDashboardPage({
 
         <AdminCard
           title="Most requested"
-          description="Website requests only — units and order count."
+          description="What customers asked for on the website."
           className="xl:col-span-2"
         >
           <MostRequestedList items={data.mostRequested} empty="Nothing requested in this period." />
@@ -149,7 +151,7 @@ export default async function AdminDashboardPage({
       </div>
 
       <div className="mb-6 grid gap-6 lg:grid-cols-2">
-        <AdminCard title="Demand by category" description={`Website requests · ${range.label}`}>
+        <AdminCard title="Popular categories" description={`From website orders · ${range.label}`}>
           <BarList items={data.demandByCategory} empty="No category demand in this period." />
         </AdminCard>
 
@@ -158,7 +160,7 @@ export default async function AdminDashboardPage({
           description="High demand with low or no stock."
           action={
             <Link href="/admin/inventory?stock=low" className="text-sm font-medium text-teal">
-              Inventory →
+              Open stock →
             </Link>
           }
         >
@@ -189,7 +191,7 @@ export default async function AdminDashboardPage({
 
       <div className="grid gap-6 lg:grid-cols-2">
         <AdminCard
-          title="Inventory snapshot"
+          title="Stock snapshot"
           description="What is on the shelf right now."
           action={
             <Link href="/admin/inventory" className="text-sm font-medium text-teal">
@@ -197,7 +199,7 @@ export default async function AdminDashboardPage({
             </Link>
           }
         >
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-3">
             <DashboardMiniStat
               label="On the website"
               value={data.inventory.published}

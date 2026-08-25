@@ -14,11 +14,19 @@ export default async function AdminCategoriesPage() {
     },
   });
 
+  const subCount = categories.reduce((sum, item) => sum + item.subcategories.length, 0);
+
   return (
-    <div>
+    <div className="min-w-0">
       <AdminPageHeader
         title="Categories"
-        description="The master list for Velora’s non-pharmaceutical supplies. Hide a group instead of deleting it if it has products."
+        description="Groups for the shop. Hide instead of deleting if products still use them."
+        meta={
+          <span>
+            {categories.length} categor{categories.length === 1 ? "y" : "ies"}
+            {subCount > 0 ? ` · ${subCount} subcategories` : ""}
+          </span>
+        }
       />
       <CategoryManager categories={categories} />
     </div>

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
+import { revalidateStoreCatalog } from "@/lib/revalidate-store";
 import { NextResponse } from "next/server";
 
 export async function POST(
@@ -34,6 +35,7 @@ export async function POST(
     } else {
       return NextResponse.json({ error: "Unknown action." }, { status: 400 });
     }
+    revalidateStoreCatalog();
     return NextResponse.json({ ok: true });
   }
 
@@ -57,5 +59,6 @@ export async function POST(
   } else {
     return NextResponse.json({ error: "Unknown action." }, { status: 400 });
   }
+  revalidateStoreCatalog();
   return NextResponse.json({ ok: true });
 }

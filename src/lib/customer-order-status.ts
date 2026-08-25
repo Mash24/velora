@@ -12,7 +12,28 @@ type OrderSnapshot = {
   delivery?: { status: string; address: string } | null;
 };
 
-export function customerOrderHeadline(status: string) {
+/** Customer-facing headline — mirrors admin Paid → Delivered/Collected → Close. */
+export function customerOrderHeadline(order: OrderSnapshot | string) {
+  if (typeof order === "string") {
+    return headlineFromStatus(order);
+  }
+
+  if (order.status === "CANCELLED") return "Cancelled";
+  if (order.status === "COMPLETED") return "Completed";
+  if (order.status === "ENQUIRY") return "Request received";
+
+  const pickup = isShopPickup(order.delivery?.address);
+  if (order.delivery?.status === "DELIVERED") {
+    return pickup ? "Collected" : "Delivered";
+  }
+  if (order.delivery?.status === "OUT_FOR_DELIVERY") {
+    return "On the way";
+  }
+  if (order.status === "PROCESSING") return "Being prepared";
+  return "Order confirmed";
+}
+
+function headlineFromStatus(status: string) {
   const labels: Record<string, string> = {
     ENQUIRY: "Request received",
     CONFIRMED: "Order confirmed",
@@ -26,14 +47,20 @@ export function customerOrderHeadline(status: string) {
 export function customerOrderSummary(order: OrderSnapshot) {
   const pickup = isShopPickup(order.delivery?.address);
   const lines = [
-    { label: "Order status", value: customerOrderHeadline(order.status) },
+    { label: "Order status", value: customerOrderHeadline(order) },
     { label: "Payment", value: paymentStatusLabel(order.payment?.status ?? "UNPAID") },
   ];
 
   if (order.status === "CANCELLED") return lines;
 
   if (pickup) {
-    lines.push({ label: "Pickup", value: "Collect from our shop" });
+    const pickupValue =
+      order.delivery?.status === "DELIVERED"
+        ? "Collected from our shop"
+        : order.status === "COMPLETED"
+          ? "Collected from our shop"
+          : "Collect from our shop";
+    lines.push({ label: "Pickup", value: pickupValue });
   } else if (order.delivery) {
     const deliveryLabels: Record<string, string> = {
       PENDING: "Delivery to be arranged",

@@ -40,6 +40,13 @@ export async function loadDashboard(range: PeriodRange, metric: DashboardMetric)
   const confirmedInPeriod = { confirmedAt: { gte: range.start, lt: range.end } };
   const completedInPeriod = { completedAt: { gte: range.start, lt: range.end } };
 
+  const needsWebsiteItems = true; // most-requested + category + low-stock demand always need items
+  const needsSoldItems = metric === "units-sold";
+  // Chart series: only the selected metric (plus website items for demand panels).
+  const needsWebsiteOrders = metric === "requests";
+  const needsConfirmed = metric === "confirmed";
+  const needsCompleted = metric === "completed";
+
   const [
     newOrders,
     awaitingPayment,
@@ -72,39 +79,57 @@ export async function loadDashboard(range: PeriodRange, metric: DashboardMetric)
       },
       orderBy: { stockQuantity: "asc" },
     }),
+    needsWebsiteOrders
+      ? prisma.order.findMany({
+          where: { ...inPeriod, fromWebsiteRequest: true },
+          select: { createdAt: true },
+        })
+      : Promise.resolve([] as { createdAt: Date }[]),
+    needsConfirmed
+      ? prisma.order.findMany({
+          where: confirmedInPeriod,
+          select: { confirmedAt: true },
+        })
+      : Promise.resolve([] as { confirmedAt: Date | null }[]),
+    needsCompleted
+      ? prisma.order.findMany({
+          where: completedInPeriod,
+          select: { completedAt: true },
+        })
+      : Promise.resolve([] as { completedAt: Date | null }[]),
+    needsWebsiteItems
+      ? prisma.orderItem.findMany({
+          where: { order: { ...inPeriod, fromWebsiteRequest: true } },
+          select: {
+            name: true,
+            quantity: true,
+            orderId: true,
+            productId: true,
+            order: { select: { createdAt: true } },
+            product: { select: { category: { select: { name: true } } } },
+          },
+        })
+      : Promise.resolve([]),
+    needsSoldItems
+      ? prisma.orderItem.findMany({
+          where: { order: confirmedInPeriod },
+          select: {
+            quantity: true,
+            productId: true,
+            order: { select: { confirmedAt: true } },
+          },
+        })
+      : Promise.resolve([] as { quantity: number; productId: string; order: { confirmedAt: Date | null } }[]),
     prisma.order.findMany({
-      where: { ...inPeriod, fromWebsiteRequest: true },
-      select: { createdAt: true },
-    }),
-    prisma.order.findMany({
-      where: confirmedInPeriod,
-      select: { confirmedAt: true },
-    }),
-    prisma.order.findMany({
-      where: completedInPeriod,
-      select: { completedAt: true },
-    }),
-    prisma.orderItem.findMany({
-      where: { order: { ...inPeriod, fromWebsiteRequest: true } },
       select: {
-        name: true,
-        quantity: true,
-        orderId: true,
-        productId: true,
-        order: { select: { createdAt: true } },
-        product: { select: { category: { select: { name: true } } } },
+        id: true,
+        orderNumber: true,
+        status: true,
+        createdAt: true,
+        customer: { select: { name: true } },
+        payment: { select: { status: true } },
+        delivery: { select: { status: true } },
       },
-    }),
-    prisma.orderItem.findMany({
-      where: { order: confirmedInPeriod },
-      select: {
-        quantity: true,
-        productId: true,
-        order: { select: { confirmedAt: true } },
-      },
-    }),
-    prisma.order.findMany({
-      include: { customer: true, payment: true, delivery: true, items: true },
       orderBy: { createdAt: "desc" },
       take: 8,
     }),

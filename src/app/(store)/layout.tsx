@@ -1,18 +1,11 @@
 import { Footer, Header } from "@/components/store/SiteChrome";
 import { SourceCapture } from "@/components/store/SourceCapture";
 import { WhatsAppFloat } from "@/components/store/WhatsAppFloat";
-import { prisma } from "@/lib/prisma";
-import { categoryWithPublishedProducts } from "@/lib/shop-query";
+import { getNavCategories } from "@/lib/store-data";
 import { Suspense } from "react";
 
-export const dynamic = "force-dynamic";
-
 export default async function StoreLayout({ children }: { children: React.ReactNode }) {
-  const categories = await prisma.category.findMany({
-    where: categoryWithPublishedProducts,
-    orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
-    select: { id: true, name: true, slug: true },
-  });
+  const categories = await getNavCategories();
 
   return (
     <div className="flex min-h-full flex-col">
