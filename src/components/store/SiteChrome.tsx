@@ -106,43 +106,43 @@ export function Header({ categories = [] }: { categories?: CategoryLink[] }) {
 
 export function Footer() {
   return (
-    <footer className="mt-auto border-t border-teal-950/10 bg-navy text-cream safe-bottom">
+    <footer className="mt-auto border-t border-navy/10 bg-mist text-navy safe-bottom">
       <div className="site-container grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-4">
         <div className="min-w-0">
           <FooterBrand />
-          <p className="mt-4 max-w-xs text-sm leading-relaxed text-cream/75">
+          <p className="mt-4 max-w-xs text-sm leading-relaxed text-navy/70">
             Medical supplies for home care, clinics and facilities. Order online or visit the Nairobi
             shop.
           </p>
         </div>
-        <div className="min-w-0 text-sm text-cream/85">
-          <p className="font-medium text-cream">Shop</p>
+        <div className="min-w-0 text-sm text-navy/80">
+          <p className="font-semibold text-navy">Shop</p>
           <FooterLink href="/shop">All products</FooterLink>
           <FooterLink href="/delivery">Delivery</FooterLink>
           <FooterLink href="/bulk-orders">Bulk / clinic orders</FooterLink>
           <FooterLink href="/track-order">Track your order</FooterLink>
           <FooterLink href="/your-order">Your order</FooterLink>
         </div>
-        <div className="min-w-0 text-sm text-cream/85">
-          <p className="font-medium text-cream">Company</p>
+        <div className="min-w-0 text-sm text-navy/80">
+          <p className="font-semibold text-navy">Company</p>
           <FooterLink href="/about">About Velora</FooterLink>
           <FooterLink href="/contact">Contact</FooterLink>
           <FooterLink href="/delivery">Pickup at the Nairobi shop</FooterLink>
         </div>
-        <div className="min-w-0 text-sm text-cream/85">
-          <p className="font-medium text-cream">Visit & contact</p>
+        <div className="min-w-0 text-sm text-navy/80">
+          <p className="font-semibold text-navy">Visit & contact</p>
           <p className="mt-2 break-anywhere">{BUSINESS.location}</p>
           <p className="mt-1 break-anywhere">{BUSINESS.landmark}</p>
-          <p className="mt-3">{BUSINESS.phoneDisplay}</p>
+          <p className="mt-3 font-medium text-navy">{BUSINESS.phoneDisplay}</p>
         </div>
       </div>
-      <div className="site-container flex flex-col gap-4 border-t border-cream/10 py-6 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-cream/70">© 2026 Velora Medical Supplies</p>
+      <div className="site-container flex flex-col gap-4 border-t border-navy/10 py-6 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm text-navy/60">© 2026 Velora Medical Supplies</p>
         <div className="flex flex-wrap gap-2">
           {["M-Pesa", "Cash", "Pay on delivery"].map((method) => (
             <span
               key={method}
-              className="rounded-md border border-cream/20 px-2.5 py-1 text-[11px] font-semibold tracking-wide text-cream/90"
+              className="rounded-md border border-navy/15 bg-white px-2.5 py-1 text-[11px] font-semibold tracking-wide text-navy/80"
             >
               {method}
             </span>
@@ -156,7 +156,7 @@ export function Footer() {
 function FooterLink({ href, children }: { href: string; children: ReactNode }) {
   return (
     <p className="mt-2">
-      <Link href={href} className="text-cream underline decoration-cream/40">
+      <Link href={href} className="text-navy/75 underline decoration-navy/25 transition hover:text-teal hover:decoration-teal/40">
         {children}
       </Link>
     </p>
